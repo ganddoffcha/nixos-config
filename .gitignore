@@ -69,3 +69,6 @@ scripts/hotspot
 .zcompdump
 .atuin/
 .python_history
+.vscode
+.vscode-shared
+.chessdb

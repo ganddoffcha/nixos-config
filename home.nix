@@ -314,6 +314,10 @@
     # GPU / driver caches
     CUDA_CACHE_PATH = "${config.xdg.cacheHome}/nvidia";
     __GL_SHADER_CACHE_DIR = "${config.xdg.cacheHome}/nvidia";
+    # TeX Live
+    TEXMFHOME = "${config.xdg.dataHome}/texmf";
+    TEXMFVAR = "${config.xdg.cacheHome}/texlive/texmf-var";
+    TEXMFCONFIG = "${config.xdg.configHome}/texlive/texmf-config";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
