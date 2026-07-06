@@ -239,14 +239,9 @@
       # zoxide — smarter cd
       eval "$(zoxide init zsh)"
 
-      # starship prompt
-      eval "$(starship init zsh)"
-
+      # starship, direnv — already initialized by home-manager before initContent
       # fzf
       eval "$(fzf --zsh)"
-
-      # direnv
-      eval "$(direnv hook zsh)"
 
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
