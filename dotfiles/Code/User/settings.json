@@ -1,14 +1,45 @@
 {
+  // ── Zoo Code only — strip VSCode to minimum ──────────────────────
+
+  // ── Telemetry & updates (off) ────────────────────────────────────
+  "telemetry.telemetryLevel": "off",
+  "update.mode": "none",
+  "extensions.autoCheckUpdates": false,
+  "extensions.autoUpdate": false,
+  "workbench.enableExperiments": false,
+
+  // ── Git (off — use CLI) ──────────────────────────────────────────
+  "git.enabled": false,
+  "git.autorefresh": false,
+  "git.autofetch": false,
+
+  // ── UI clutter (off) ─────────────────────────────────────────────
+  "workbench.startupEditor": "none",
+  "workbench.tips.enabled": false,
+  "editor.minimap.enabled": false,
+  "workbench.statusBar.visible": false,
+  "workbench.editor.showTabs": "none",
+  "breadcrumbs.enabled": false,
+  "outline.showVariables": false,
+  "outline.showFunctions": false,
+  "outline.showStrings": false,
+  "outline.showKeys": false,
+  "outline.showConstants": false,
+  "editor.guides.indentation": false,
+  "editor.renderLineHighlight": "none",
+  "editor.occurrencesHighlight": "off",
+  "editor.selectionHighlight": false,
+  "editor.matchBrackets": "never",
+  "editor.links": false,
+  "editor.codeLens": false,
+  "editor.lightbulb.enabled": "off",
+
+  // ── File watching (aggressive exclusions) ────────────────────────
   "files.watcherExclude": {
     "**/.cache/**": true,
     "**/.cache": true,
-    "**/.config/BraveSoftware/**": true,
-    "**/.config/chromium/**": true,
-    "**/.config/spotify/**": true,
-    "**/.config/obs-studio/**": true,
-    "**/.config/GIMP/**": true,
-    "**/.config/unity3d/**": true,
-    "**/.config/dconf/**": true,
+    "**/.config/**": true,
+    "**/.config": true,
     "**/.local/**": true,
     "**/.local": true,
     "**/.steam/**": true,
@@ -19,14 +50,23 @@
     "**/Pictures/**": true,
     "**/Videos/**": true,
     "**/.nix-profile/**": true,
+    "**/.nix-defexpr/**": true,
     "**/result": true,
     "**/result-*": true,
     "**/.npm/**": true,
     "**/.texlive*/**": true,
     "**/.elan/**": true,
     "**/.chessdb/**": true,
-    "**/.muse-sounds-manager/**": true
+    "**/.muse-sounds-manager/**": true,
+    "**/.ssh/**": true,
+    "**/.pki/**": true,
+    "**/.gnome2/**": true,
+    "**/.hasplm/**": true,
+    "**/.nv/**": true,
+    "**/.vscode-shared/**": true
   },
+
+  // ── Search exclusions ────────────────────────────────────────────
   "search.exclude": {
     "**/.cache": true,
     "**/.local": true,
@@ -40,11 +80,49 @@
     "**/result": true,
     "**/result-*": true
   },
+
+  // ── Explorer exclusions ──────────────────────────────────────────
   "files.exclude": {
     "**/.cache": true,
     "**/.steam": true,
     "**/.var": true,
     "**/result": true,
-    "**/result-*": true
-  }
+    "**/result-*": true,
+    "**/.config": true,
+    "**/.local": true,
+    "**/Documents": true,
+    "**/Downloads": true,
+    "**/Pictures": true,
+    "**/Videos": true
+  },
+
+  // ── Misc off ─────────────────────────────────────────────────────
+  "workbench.editorAssociations": {
+    "*.md": "default"
+  },
+  "security.workspace.trust.enabled": false,
+  "workbench.settings.enableNaturalLanguageSearch": false,
+  "npm.autoDetect": "off",
+  "task.autoDetect": "off",
+  "problemMatcher.autoDetect": "off",
+  "editor.wordBasedSuggestions": "off",
+  "editor.suggest.showWords": false,
+  "editor.quickSuggestions": {
+    "other": "off",
+    "comments": "off",
+    "strings": "off"
+  },
+  "editor.parameterHints.enabled": false,
+  "editor.hover.enabled": false,
+  "editor.gotoLocation.multipleDeclarations": "goto",
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "editor.gotoLocation.multipleImplementations": "goto",
+  "editor.gotoLocation.multipleReferences": "goto",
+  "workbench.reduceMotion": "on",
+  "window.titleBarStyle": "custom",
+  "editor.smoothScrolling": false,
+  "workbench.list.smoothScrolling": false,
+  "editor.cursorSmoothCaretAnimation": "off",
+  "editor.dragAndDrop": false,
+  "workbench.editor.centeredLayoutAutoResize": false
 }
