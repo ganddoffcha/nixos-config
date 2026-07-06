@@ -33,7 +33,7 @@
     ghostty
 
     # ── Shell Tools ─────────────────────────────────────────────────────
-    zsh-fast-syntax-highlighting
+    zsh-syntax-highlighting
     starship
     zoxide
     fzf
@@ -192,26 +192,9 @@
     enable = true;
     enableCompletion = true;
     autosuggestion.enable = true;
-    syntaxHighlighting = {
-      enable = true;
-      highlighters = [ "main" "brackets" "pattern" "cursor" "regexp" "root" "line" ];
-      styles = {
-        command = "fg=green,bold";
-        builtin = "fg=green";
-        alias = "fg=cyan,bold";
-        function = "fg=blue,bold";
-        "unknown-token" = "fg=red,bold";
-        path = "fg=white,underline";
-        globbing = "fg=yellow";
-        "history-expansion" = "fg=blue";
-        "single-quoted-argument" = "fg=yellow";
-        "double-quoted-argument" = "fg=yellow";
-        "dollar-quoted-argument" = "fg=yellow";
-        comment = "fg=black,bold";
-        redirection = "fg=magenta";
-        default = "none";
-      };
-    };
+    # syntax highlighting sourced and configured manually in initContent
+    # home-manager's module places config after source but uses += which
+    # duplicates highlighters and can cause issues.
     history = {
       size = 10000;
       path = "${config.xdg.dataHome}/zsh/history";
@@ -245,6 +228,26 @@
 
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
+
+      # ── Syntax highlighting ─────────────────────────────────────────
+      # Sourced and configured manually (not via home-manager module)
+      # because home-manager's += highlighters duplicates defaults.
+      source "${config.home.profileDirectory}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+      ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
+      ZSH_HIGHLIGHT_STYLES[command]='fg=#00ff00,bold'
+      ZSH_HIGHLIGHT_STYLES[builtin]='fg=#00ff00'
+      ZSH_HIGHLIGHT_STYLES[alias]='fg=#00ffff,bold'
+      ZSH_HIGHLIGHT_STYLES[function]='fg=#0055ff,bold'
+      ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#ff0000,bold'
+      ZSH_HIGHLIGHT_STYLES[path]='fg=#ffffff,underline'
+      ZSH_HIGHLIGHT_STYLES[globbing]='fg=#ffff00'
+      ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=#0055ff'
+      ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#ffff00'
+      ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#ffff00'
+      ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]='fg=#ffff00'
+      ZSH_HIGHLIGHT_STYLES[comment]='fg=#555555,bold'
+      ZSH_HIGHLIGHT_STYLES[redirection]='fg=#ff00ff'
+      ZSH_HIGHLIGHT_STYLES[default]='none'
     '';
   };
 
