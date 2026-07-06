@@ -194,7 +194,7 @@
   # ═══════════════════════════════════════════════════════════════════════
   nixpkgs.config.allowUnfree = true;
   environment.pathsToLink = [ "/share/wayland-sessions" ];
-  environment.binsh = pkgs.dash;
+  environment.binsh = "${pkgs.dash}/bin/dash";
   environment.systemPackages = with pkgs; [
     # Only packages that are genuinely system-level or needed before
     # home-manager activation. Everything else lives in home.nix.
