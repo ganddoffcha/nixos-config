@@ -306,6 +306,10 @@
     ZCOMPCACHE = "${config.xdg.cacheHome}/zsh/zcompdump";
     PYTHONPYCACHEPREFIX = "${config.xdg.cacheHome}/python";
     PYTHON_HISTORY = "${config.xdg.dataHome}/python_history";
+    # Development tools
+    ASDF_DATA_DIR = "${config.xdg.dataHome}/asdf";
+    ELAN_HOME = "${config.xdg.dataHome}/elan";
+    npm_config_cache = "${config.xdg.cacheHome}/npm";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
