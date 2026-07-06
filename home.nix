@@ -56,6 +56,7 @@
     procs
     xh
     zellij
+    vivid
 
     # ── System Monitoring ───────────────────────────────────────────────
     htop
@@ -210,6 +211,11 @@
       alias htop="btm"
       alias curl="xh"
 
+      # ── Colors ──────────────────────────────────────────────────────
+      # vivid generates LS_COLORS for colored directory/file listings
+      eval "$(vivid generate snazzy)"
+      export BAT_THEME="Dracula"
+
       # ── Tool integrations ────────────────────────────────────────────
       # zoxide — smarter cd
       eval "$(zoxide init zsh)"
@@ -234,6 +240,9 @@
   programs.starship = {
     enable = true;
   };
+
+  # starship config — managed by home-manager
+  xdg.configFile."starship.toml".source = ./dotfiles/starship.toml;
 
   # ═══════════════════════════════════════════════════════════════════════
   # DIRENV
