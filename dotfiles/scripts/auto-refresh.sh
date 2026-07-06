@@ -62,8 +62,19 @@ else
     expected_hz="60"
 fi
 
+# Skip if we already applied this state (avoids unnecessary mode switches
+# during rebuilds, Hyprland restarts, etc.)
+if [ -f "$STAMP_FILE" ] && [ "$(cat "$STAMP_FILE")" = "$desired" ]; then
+    exit 0
+fi
+
 # Check what Hyprland is actually running (survives Hyprland restarts)
 actual_hz=$(current_refresh_rate)
+
+# If hyprctl failed (empty output), don't touch anything
+if [ -z "$actual_hz" ]; then
+    exit 0
+fi
 
 # Apply if the monitor doesn't match the expected refresh rate
 if [ "$actual_hz" != "$expected_hz" ]; then
