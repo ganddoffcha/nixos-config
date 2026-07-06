@@ -236,10 +236,6 @@
   # ── Screen color temperature ──────────────────────────────────────────
   xdg.configFile."gammastep/config.ini".source = ./dotfiles/gammastep/config.ini;
 
-  # ── VSCode ────────────────────────────────────────────────────────────
-  xdg.configFile."Code/User/keybindings.json".source = ./dotfiles/Code/User/keybindings.json;
-  xdg.configFile."Code/User/settings.json".source = ./dotfiles/Code/User/settings.json;
-
   # ── Workspace root files ──────────────────────────────────────────────
   home.file.".clinerules".source = ./dotfiles/clinerules;
   home.file."memory-strategy.md".source = ./dotfiles/memory-strategy.md;
