@@ -302,6 +302,10 @@
     PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
     # Sudo
     SUDO_ASKPASS = "${config.home.homeDirectory}/.local/bin/dmenupass";
+    # XDG compliance — move dotfiles out of ~/
+    ZCOMPCACHE = "${config.xdg.cacheHome}/zsh/zcompdump";
+    PYTHONPYCACHEPREFIX = "${config.xdg.cacheHome}/python";
+    PYTHON_HISTORY = "${config.xdg.dataHome}/python_history";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
