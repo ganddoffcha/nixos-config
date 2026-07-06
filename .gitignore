@@ -66,3 +66,6 @@ scripts/hotspot
 .zprofile
 .zshenv
 .zshrc
+.zcompdump
+.atuin/
+.python_history
