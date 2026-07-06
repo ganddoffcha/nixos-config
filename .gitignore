@@ -15,11 +15,13 @@
 .config/obs-studio/
 .config/spotify/
 .config/unity3d/
+/Documents/
 .factorio/
 .gemini/
 hardware-configuration.nix
 .local/share/
 # Machine-specific (auto-generated)
+/mathematics_in_lean/
 memory-strategy.md
 .mono/
 # Nix build artifacts

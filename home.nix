@@ -117,7 +117,6 @@
     # ── Development ─────────────────────────────────────────────────────
     git
     python3
-    asdf-vm
     elan
     openssl
     nss

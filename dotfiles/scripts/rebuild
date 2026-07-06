@@ -31,14 +31,16 @@ sudo nixos-rebuild "$ACTION" "${@:2}"
 
 cd "$REPO_DIR"
 
+# Stage only NixOS config files (avoids accidentally adding nested repos)
+git add configuration.nix home.nix dotfiles/ .gitignore
+
 # Only commit if there are changes
-if git diff --quiet && git diff --cached --quiet; then
+if git diff --quiet --cached; then
     echo "==> No config changes to commit."
     exit 0
 fi
 
 echo "==> Committing config changes ..."
-git add -A
 git commit -m "nixos-rebuild: $(date +%Y-%m-%d-%H%M)"
 
 # ── Push (non-fatal if no remote or auth fails) ──────────────────────
