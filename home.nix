@@ -311,6 +311,9 @@
     ELAN_HOME = "${config.xdg.dataHome}/elan";
     npm_config_cache = "${config.xdg.cacheHome}/npm";
     MONO_REGISTRY_PATH = "${config.xdg.dataHome}/mono";
+    # GPU / driver caches
+    CUDA_CACHE_PATH = "${config.xdg.cacheHome}/nvidia";
+    __GL_SHADER_CACHE_DIR = "${config.xdg.cacheHome}/nvidia";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
