@@ -45,7 +45,7 @@ git commit -m "nixos-rebuild: $(date +%Y-%m-%d-%H%M)"
 
 # ── Push (non-fatal if no remote or auth fails) ──────────────────────
 
-if git remote -q | grep -q origin; then
+if git remote -v | grep -q origin; then
     echo "==> Pushing to origin ..."
     git push 2>&1 || echo "==> Push failed (check auth/network) — changes committed locally."
 else
