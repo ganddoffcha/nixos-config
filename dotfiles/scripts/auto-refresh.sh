@@ -14,9 +14,16 @@ STAMP_FILE="/tmp/auto-refresh-last-state"
 # ── Helpers ───────────────────────────────────────────────────────────
 
 ac_online() {
-    local status
-    status=$(cat /sys/class/power_supply/BAT0/status 2>/dev/null)
-    [[ "$status" == "Charging" || "$status" == "Full" ]]
+    # Check any Mains-type power supply (ADP0, AC, etc.)
+    # More reliable than BAT0/status which reports "Not charging" when
+    # the battery is at its charge threshold (e.g. ASUS battery health 80% cap).
+    for psu in /sys/class/power_supply/*/; do
+        if [[ "$(cat "$psu/type" 2>/dev/null)" == "Mains" ]] && \
+           [[ "$(cat "$psu/online" 2>/dev/null)" == "1" ]]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
 current_refresh_rate() {
