@@ -229,6 +229,16 @@
       alias curl="xh"
 
       # ── Colors ──────────────────────────────────────────────────────
+      # Less colors (terminal pager)
+      export LESS=R
+      export LESS_TERMCAP_mb="$(printf '%b' '[1;31m')"
+      export LESS_TERMCAP_md="$(printf '%b' '[1;36m')"
+      export LESS_TERMCAP_me="$(printf '%b' '[0m')"
+      export LESS_TERMCAP_so="$(printf '%b' '[01;44;33m')"
+      export LESS_TERMCAP_se="$(printf '%b' '[0m')"
+      export LESS_TERMCAP_us="$(printf '%b' '[1;32m')"
+      export LESS_TERMCAP_ue="$(printf '%b' '[0m')"
+
       # vivid generates LS_COLORS for colored directory/file listings
       # Must export explicitly — vivid output is raw LS_COLORS value
       export LS_COLORS="$(vivid generate snazzy)"
@@ -265,12 +275,41 @@
   # ═══════════════════════════════════════════════════════════════════════
   # ENVIRONMENT
   # ═══════════════════════════════════════════════════════════════════════
+  home.sessionPath = [
+    "$HOME/scripts"
+  ];
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
     TERMINAL = "ghostty";
     BROWSER = "brave";
+    # XDG compliance — zsh looks for .zshrc here (login shells)
+    ZDOTDIR = "${config.xdg.configHome}/zsh";
+    # fzf
+    FZF_DEFAULT_OPTS = "--layout=reverse --height 40%";
+    # less colors
+    LESS = "R";
+    # QT / Java / Mozilla
+    QT_QPA_PLATFORMTHEME = "gtk2";
+    MOZ_USE_XINPUT2 = "1";
+    _JAVA_AWT_WM_NONREPARENTING = "1";
+    # Go
+    GOPATH = "${config.xdg.dataHome}/go";
+    GOMODCACHE = "${config.xdg.cacheHome}/go/mod";
+    # Cargo
+    CARGO_HOME = "${config.xdg.dataHome}/cargo";
+    # Python
+    PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
+    # Sudo
+    SUDO_ASKPASS = "${config.home.homeDirectory}/.local/bin/dmenupass";
   };
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # ZDOTDIR symlink — .zprofile sets ZDOTDIR=~/.config/zsh.
+  # Symlink ~/.config/zsh/.zshrc → ~/.zshrc so both login and non-login
+  # shells use the same home-manager managed config.
+  # ═══════════════════════════════════════════════════════════════════════
+  home.file.".config/zsh/.zshrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.zshrc";
 
   # ═══════════════════════════════════════════════════════════════════════
   # DOTFILES — declaratively managed config files
