@@ -230,6 +230,8 @@
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
 
+      echo "DEBUG: reached after atuin" >> /tmp/zsh-debug.log
+
       # ── Syntax highlighting ─────────────────────────────────────────
       # Sourced and configured manually (not via home-manager module)
       # because home-manager's += highlighters duplicates defaults.
@@ -249,6 +251,7 @@
       ZSH_HIGHLIGHT_STYLES[comment]='fg=#555555,bold'
       ZSH_HIGHLIGHT_STYLES[redirection]='fg=#ff00ff'
       ZSH_HIGHLIGHT_STYLES[default]='none'
+      echo "DEBUG: syntax highlighting configured, HL=$ZSH_HIGHLIGHT_HIGHLIGHTERS" >> /tmp/zsh-debug.log
     '';
   };
 
