@@ -192,9 +192,24 @@
     enable = true;
     enableCompletion = true;
     autosuggestion.enable = true;
-    # syntax highlighting sourced and configured manually in initContent
-    # home-manager's module places config after source but uses += which
-    # duplicates highlighters and can cause issues.
+    syntaxHighlighting.enable = true;
+    syntaxHighlighting.highlighters = [ "main" "brackets" "pattern" ];
+    syntaxHighlighting.styles = {
+      command = "fg=#00ff00,bold";
+      builtin = "fg=#00ff00";
+      alias = "fg=#00ffff,bold";
+      function = "fg=#0055ff,bold";
+      "unknown-token" = "fg=#ff0000,bold";
+      path = "fg=#ffffff,underline";
+      globbing = "fg=#ffff00";
+      "history-expansion" = "fg=#0055ff";
+      "single-quoted-argument" = "fg=#ffff00";
+      "double-quoted-argument" = "fg=#ffff00";
+      "dollar-quoted-argument" = "fg=#ffff00";
+      comment = "fg=#555555,bold";
+      redirection = "fg=#ff00ff";
+      default = "none";
+    };
     history = {
       size = 10000;
       path = "${config.xdg.dataHome}/zsh/history";
@@ -229,29 +244,6 @@
 
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
-
-      echo "DEBUG: reached after atuin" >> /tmp/zsh-debug.log
-
-      # ── Syntax highlighting ─────────────────────────────────────────
-      # Sourced and configured manually (not via home-manager module)
-      # because home-manager's += highlighters duplicates defaults.
-      source "${config.home.profileDirectory}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-      ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
-      ZSH_HIGHLIGHT_STYLES[command]='fg=#00ff00,bold'
-      ZSH_HIGHLIGHT_STYLES[builtin]='fg=#00ff00'
-      ZSH_HIGHLIGHT_STYLES[alias]='fg=#00ffff,bold'
-      ZSH_HIGHLIGHT_STYLES[function]='fg=#0055ff,bold'
-      ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#ff0000,bold'
-      ZSH_HIGHLIGHT_STYLES[path]='fg=#ffffff,underline'
-      ZSH_HIGHLIGHT_STYLES[globbing]='fg=#ffff00'
-      ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=#0055ff'
-      ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#ffff00'
-      ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#ffff00'
-      ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]='fg=#ffff00'
-      ZSH_HIGHLIGHT_STYLES[comment]='fg=#555555,bold'
-      ZSH_HIGHLIGHT_STYLES[redirection]='fg=#ff00ff'
-      ZSH_HIGHLIGHT_STYLES[default]='none'
-      echo "DEBUG: syntax highlighting configured, HL=$ZSH_HIGHLIGHT_HIGHLIGHTERS" >> /tmp/zsh-debug.log
     '';
   };
 
