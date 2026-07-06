@@ -18,7 +18,7 @@
 
 ## 2. Auto-Storage Triggers
 
-Zoo automatically persists to the knowledge graph when:
+Zoo automatically persists to the knowledge graph **immediately** (not batched at session end) when:
 
 - **Session start** → Create a `session-YYYY-MM-DD` entity with summary of what's being worked on
 - **File creation/modification** → Store file path, purpose, and key contents summary as a `file` entity
@@ -26,6 +26,8 @@ Zoo automatically persists to the knowledge graph when:
 - **User preference expressed** → Update the `user` entity with new observations
 - **Project status change** → Update the `project` entity's observations
 - **Session end** → Finalize session entity with summary of accomplishments and open items
+
+**Proactive recording rule:** Memory recording must be PROACTIVE and IMMEDIATE — not batched at session end. After every meaningful exchange (new fact, decision, preference, file change, automation detail), create/update entities right away. If the user has to ask "you remember X right?" — that is a failure of the memory system. The knowledge graph is a live brain, not a session log.
 
 ## 3. Relation Conventions
 
@@ -84,6 +86,24 @@ Zoo automatically persists to the knowledge graph when:
 ### File Hygiene
 - [`BOOTSTRAP.md`](BOOTSTRAP.md) is redundant — `.clinerules` supersedes it. Delete if found.
 - This document (`memory-strategy.md`) is the single canonical strategy reference
+
+## 7. Scalability
+
+### Hard Caps
+- **Max 5 observations per entity** — when adding a 6th observation, consolidate the oldest two into a summary
+- **Max 50 total entities** — when approaching the limit, run the cleanup checklist (Section 6)
+- **Max 20 relations** — prefer fewer, higher-quality relations over exhaustive linking
+
+### Consolidation Triggers
+- **Sessions older than 14 days** → archive by merging into a single "historical" session entity with condensed summary
+- **Redundant decisions** → merge duplicates, keep the most complete one
+- **Stale file entities** → delete if the file no longer exists in the workspace
+- **Superseded observations** → remove or replace when newer information contradicts them
+
+### Smart Retrieval
+- **Bootstrap (session start):** Use `read_graph` to restore full context — this is the ONLY time a full graph read is needed
+- **Mid-session lookups:** Use `search_nodes` for targeted queries (e.g., "what was that decision about X?")
+- **Specific entity inspection:** Use `open_nodes` to retrieve detailed observations for known entity names
 
 ---
 

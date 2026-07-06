@@ -20,7 +20,7 @@ You MUST follow these instructions in every task:
 
 1. **On task start:** Read the knowledge graph (`mcp--memory--read_graph`) to understand what happened in previous sessions. Use this context to provide continuity.
 
-2. **On significant progress:** Store session summaries, decisions, and file changes in the MCP knowledge graph using `create_entities`, `create_relations`, and `add_observations`.
+2. **Record proactively and immediately:** Store facts, decisions, preferences, file changes, and context to the knowledge graph DURING conversations — not batched at session end. After every meaningful exchange (new fact learned, decision made, preference expressed, file created/modified), immediately create/update entities using `create_entities`, `create_relations`, and `add_observations`. If the user has to ask "you remember X right?" — that is a failure of the memory system. The knowledge graph is a live brain, not a session log.
 
 3. **Store decisions** as `decision` entities linked to the relevant `project` entity with rationale and alternatives considered.
 
@@ -44,3 +44,8 @@ You MUST follow these instructions in every task:
 - **Done:** Created memory persistence strategy (`memory-strategy.md`), enriched knowledge graph with entities and relations, created `BOOTSTRAP.md` reminder file, set up Ctrl+Alt+Z Zen Mode shortcut.
 - **Decisions:** Chose MCP knowledge graph for cross-session memory storage. Bootstrap protocol (Section 5) is mandatory but passive documentation alone failed twice.
 - **Pending:** Prove that `.clinerules` in workspace root can break the bootstrap failure cycle.
+
+### 2026-07-06 (sessions e-k)
+- **Done:** Sessions e through k — 7 consecutive sessions with successful bootstrap via `.clinerules`. Major accomplishments: NixOS/home-manager config review and fixes (initExtra, firmware, xdg portals), power optimization (17W→13.8W via 60Hz on battery + auto-refresh power profile switcher with udev trigger), declarative migration of 12+ config files to home-manager xdg.configFile, GitHub repo creation and push (nixos-config + documents), auto-refresh AC detection bugfix (ADP0 Mains-type), VSCode settings.json/keybindings.json removed from home-manager (Nix store symlinks are read-only — VSCode needs write access), nvim LaTeX automations catalogued, proactive memory recording rule established.
+- **Decisions:** Always search docs before asserting API semantics, use udev+systemd path units for power profile switching, migrate all user configs to home-manager for declarative reproducibility, VSCode settings must NOT be home-manager managed, memory recording must be proactive/immediate not batched.
+- **Pending:** `.clinerules` and `memory-strategy.md` edits from session k need to be committed and pushed; `git remote -q` bug in rebuild script fixed in dotfiles but Nix store symlink stale until next rebuild.
