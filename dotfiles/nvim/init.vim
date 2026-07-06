@@ -98,6 +98,15 @@ set noshowcmd
 " Runs a script that cleans out tex build files whenever I close out of a .tex file.
 	autocmd VimLeave *.tex !latexmk -c %
 
+" Auto-commit LaTeX projects on save (only if file is in a git repo)
+	function! TexAutoGit()
+		let l:dir = expand('%:p:h')
+		if isdirectory(l:dir . '/.git')
+			call system('cd ' . shellescape(l:dir) . ' && git add -A && git commit -m "tex: ' . expand('%:t') . '" 2>&1 &')
+		endif
+	endfunction
+	autocmd BufWritePost *.tex call TexAutoGit()
+
 " Ensure files are read as what I want:
 	let g:vimwiki_ext2syntax = {'.Rmd': 'markdown', '.rmd': 'markdown','.md': 'markdown', '.markdown': 'markdown', '.mdown': 'markdown'}
 	map <leader>v :VimwikiIndex<CR>

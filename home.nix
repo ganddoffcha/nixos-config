@@ -267,6 +267,10 @@
     source = ./dotfiles/scripts/auto-refresh.sh;
     executable = true;
   };
+  home.file."scripts/rebuild" = {
+    source = ./dotfiles/scripts/rebuild;
+    executable = true;
+  };
 
   systemd.user.services.auto-refresh = {
     Unit = {
