@@ -192,7 +192,26 @@
     enable = true;
     enableCompletion = true;
     autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
+    syntaxHighlighting = {
+      enable = true;
+      highlighters = [ "main" "brackets" "pattern" "cursor" "regexp" "root" "line" ];
+      styles = {
+        command = "fg=green,bold";
+        builtin = "fg=green";
+        alias = "fg=cyan,bold";
+        function = "fg=blue,bold";
+        "unknown-token" = "fg=red,bold";
+        path = "fg=white,underline";
+        globbing = "fg=yellow";
+        "history-expansion" = "fg=blue";
+        "single-quoted-argument" = "fg=yellow";
+        "double-quoted-argument" = "fg=yellow";
+        "dollar-quoted-argument" = "fg=yellow";
+        comment = "fg=black,bold";
+        redirection = "fg=magenta";
+        default = "none";
+      };
+    };
     history = {
       size = 10000;
       path = "${config.xdg.dataHome}/zsh/history";
@@ -231,26 +250,6 @@
 
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
-    '';
-    initExtra = ''
-      # ── Syntax highlighting colors ──────────────────────────────────
-      # Must be in initExtra (after plugin source), not initContent.
-      # Home-manager's +=() clears defaults; reset highlighters explicitly.
-      ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor regexp root line)
-      ZSH_HIGHLIGHT_STYLES[command]='fg=green,bold'
-      ZSH_HIGHLIGHT_STYLES[builtin]='fg=green'
-      ZSH_HIGHLIGHT_STYLES[alias]='fg=cyan,bold'
-      ZSH_HIGHLIGHT_STYLES[function]='fg=blue,bold'
-      ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=red,bold'
-      ZSH_HIGHLIGHT_STYLES[path]='fg=white,underline'
-      ZSH_HIGHLIGHT_STYLES[globbing]='fg=yellow'
-      ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=blue'
-      ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=yellow'
-      ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=yellow'
-      ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]='fg=yellow'
-      ZSH_HIGHLIGHT_STYLES[comment]='fg=black,bold'
-      ZSH_HIGHLIGHT_STYLES[redirection]='fg=magenta'
-      ZSH_HIGHLIGHT_STYLES[default]='none'
     '';
   };
 
