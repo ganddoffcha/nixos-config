@@ -33,12 +33,10 @@
     ghostty
 
     # ── Shell Tools ─────────────────────────────────────────────────────
-    zsh-syntax-highlighting
     starship
     zoxide
     fzf
     fd
-    tree
     wget
     direnv
     dash
@@ -59,7 +57,6 @@
     vivid
 
     # ── System Monitoring ───────────────────────────────────────────────
-    htop
     fastfetch
     inxi
     powertop
@@ -96,7 +93,6 @@
     yt-dlp
     playerctl
     pulsemixer
-    cheese
     obs-studio
     openai-whisper
 
@@ -128,7 +124,6 @@
     # ── Network ─────────────────────────────────────────────────────────
     speedtest-cli
     wireguard-tools
-    gnome-network-displays
 
     # ── Development ─────────────────────────────────────────────────────
     git
@@ -367,8 +362,6 @@
   xdg.configFile."nvim/init.vim".source = ./dotfiles/nvim/init.vim;
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
-  xdg.configFile."htop/htoprc".source = ./dotfiles/htop/htoprc;
-
   # ═══════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT — auto-switch compositor settings on AC state change
   # ═══════════════════════════════════════════════════════════════════════
