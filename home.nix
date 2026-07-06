@@ -43,6 +43,20 @@
     direnv
     dash
 
+    # ── Modern CLI Tools ─────────────────────────────────────────────────
+    eza
+    bat
+    ripgrep
+    dust
+    delta
+    bottom
+    atuin
+    lazygit
+    tealdeer
+    procs
+    xh
+    zellij
+
     # ── System Monitoring ───────────────────────────────────────────────
     htop
     fastfetch
@@ -161,6 +175,12 @@
     extraConfig = {
       init.defaultBranch = "main";
       pull.rebase = true;
+      core.pager = "delta";
+      delta.navigate = true;
+      delta.side-by-side = true;
+      delta.line-numbers = true;
+      delta.syntax-theme = "Dracula";
+      interactive.diffFilter = "delta --color-only";
     };
   };
 
@@ -177,6 +197,20 @@
       path = "${config.xdg.dataHome}/zsh/history";
     };
     initContent = ''
+      # ── Aliases: modern replacements ─────────────────────────────────
+      alias ls="eza --icons --group-directories-first"
+      alias ll="eza -l --icons --group-directories-first --git"
+      alias la="eza -la --icons --group-directories-first --git"
+      alias lt="eza --tree --icons --level=2"
+      alias cat="bat --paging=never"
+      alias grep="rg"
+      alias du="dust"
+      alias ps="procs"
+      alias top="btm"
+      alias htop="btm"
+      alias curl="xh"
+
+      # ── Tool integrations ────────────────────────────────────────────
       # zoxide — smarter cd
       eval "$(zoxide init zsh)"
 
@@ -188,6 +222,9 @@
 
       # direnv
       eval "$(direnv hook zsh)"
+
+      # atuin — shell history (must be after starship)
+      eval "$(atuin init zsh --disable-up-arrow)"
     '';
   };
 
