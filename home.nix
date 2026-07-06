@@ -296,11 +296,6 @@
   # ── Screen color temperature ──────────────────────────────────────────
   xdg.configFile."gammastep/config.ini".source = ./dotfiles/gammastep/config.ini;
 
-  # ── ZDOTDIR compatibility ─────────────────────────────────────────────
-  # .zprofile sets ZDOTDIR=~/.config/zsh, so zsh looks there for .zshrc.
-  # Symlink it to the home-manager managed ~/.zshrc.
-  home.file.".config/zsh/.zshrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.zshrc";
-
   # ── Workspace root files ──────────────────────────────────────────────
   home.file.".clinerules".source = ./dotfiles/clinerules;
   home.file."memory-strategy.md".source = ./dotfiles/memory-strategy.md;
