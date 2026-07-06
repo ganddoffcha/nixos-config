@@ -215,7 +215,8 @@
 
       # ── Colors ──────────────────────────────────────────────────────
       # vivid generates LS_COLORS for colored directory/file listings
-      eval "$(vivid generate snazzy)"
+      # Must export explicitly — vivid output is raw LS_COLORS value
+      export LS_COLORS="$(vivid generate snazzy)"
       export BAT_THEME="Dracula"
 
       # ── Tool integrations ────────────────────────────────────────────
