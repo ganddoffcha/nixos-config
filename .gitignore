@@ -1,0 +1,39 @@
+# Machine-specific (auto-generated)
+hardware-configuration.nix
+
+# Nix build artifacts
+result
+result-*
+
+# Application state (not config)
+.config/Code/User/globalStorage/
+.config/Code/User/workspaceStorage/
+.config/chromium/
+.config/BraveSoftware/
+.config/dconf/
+.config/GIMP/
+.config/inkscape/
+.config/obs-studio/
+.config/spotify/
+.config/unity3d/
+.cache/
+.local/share/
+.steam/
+.factorio/
+.x-plane/
+.mono/
+.asdf/
+.npm/
+.gemini/
+.zoo-memory/
+
+# Secrets
+scripts/hotspot
+.clinerules
+memory-strategy.md
+scripts/
+.zshenv
+.zshrc
+.nix-profile
+.steampath
+.steampid

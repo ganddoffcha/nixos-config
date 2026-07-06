@@ -1,0 +1,11 @@
+#!/bin/sh
+
+file="$(date +%Y%m%d%H%M%S)"
+
+[ -n "$1" ] && file="$1"
+
+mkdir ~/Documents/texnow/"$file"
+cd ~/Documents/texnow/$file
+cp ../leopard.sty .
+cp ../template.tex ./"$file".tex
+nvim "$file".tex

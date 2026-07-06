@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Create a temporary file
+tmpfile=$(mktemp)
+
+# Launch Ghostty
+ghostty -e yazi --chooser-file="$tmpfile" > /dev/null 2>&1
+
+if [ -s "$tmpfile" ]; then
+    # 'cat' the file, then 'echo' to ensure a final newline for the shell
+    cat "$tmpfile"
+    echo ""
+    rm "$tmpfile"
+fi

@@ -1,0 +1,15 @@
+[
+  {
+    "key": "ctrl+alt+z",
+    "command": "runCommands",
+    "args": {
+      "commands": [
+        "workbench.action.closeAllEditors",
+        "zoo-code.openInNewTab",
+        "workbench.action.joinAllGroups",
+        "workbench.action.closeSidebar",
+        "workbench.action.closePanel"
+      ]
+    }
+  }
+]

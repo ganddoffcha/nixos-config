@@ -1,0 +1,46 @@
+# Zoo Code Persistent Memory
+
+This file is auto-injected into every task's context by Zoo Code.
+It serves as persistent memory across sessions — no action needed from you.
+
+## ⛔ BOOTSTRAP PROTOCOL (READ FIRST)
+
+**Before responding to the FIRST user message of any session**, you MUST call `mcp--memory--read_graph` to restore context from the knowledge graph. This is a hard gate — no greeting, no follow-up question, no tool use before `read_graph`.
+
+Why this exists: You failed this protocol three times on 2026-07-06. The knowledge graph contains session history, user preferences, and project context that you MUST restore before responding.
+
+After read_graph:
+1. Process any one-shot observations
+2. Restore project context (active project, last session, open items)
+3. THEN respond to the user with full context
+
+## Memory Instructions (for the AI)
+
+You MUST follow these instructions in every task:
+
+1. **On task start:** Read the knowledge graph (`mcp--memory--read_graph`) to understand what happened in previous sessions. Use this context to provide continuity.
+
+2. **On significant progress:** Store session summaries, decisions, and file changes in the MCP knowledge graph using `create_entities`, `create_relations`, and `add_observations`.
+
+3. **Store decisions** as `decision` entities linked to the relevant `project` entity with rationale and alternatives considered.
+
+4. **At session end:** Finalize the session entity with summary of accomplishments and open items.
+
+## Session History
+
+<!-- AI: append new entries below this line, newest first -->
+
+### 2026-07-06 (session d)
+- **Done:** BOOTSTRAP SUCCESS — `.clinerules` enforcement worked. Zoo called `read_graph` before first response for the first time, breaking the 3-session failure streak. Cleaned up memory strategy: rewrote `memory-strategy.md` (collapsed failure log into Appendix A, expanded Maintenance section), deprecated `BOOTSTRAP.md`, consolidated knowledge graph from 17 to 14 entities. Moved memory files from `~/Desktop/` to `~/` per user preference.
+- **Decisions:** `.clinerules` in workspace root is the validated technical enforcement mechanism for the bootstrap protocol. `~/` is the preferred workspace directory.
+- **Pending:** User needs to switch VSCode workspace from `~/Desktop/` to `~/`. Old files in `~/Desktop/` should be cleaned up.
+
+### 2026-07-06 (session c)
+- **Done:** Diagnosed third bootstrap protocol failure. Discovered `.clinerules` mechanism in Zoo Code extension that auto-injects rules into system prompt. Created this file in workspace root to enforce `read_graph` before first response.
+- **Decisions:** `.clinerules` in workspace root is the first technical enforcement mechanism (not just passive documentation).
+- **Pending:** Test in next session whether this actually enforces the bootstrap protocol.
+
+### 2026-07-06 (sessions a-b)
+- **Done:** Created memory persistence strategy (`memory-strategy.md`), enriched knowledge graph with entities and relations, created `BOOTSTRAP.md` reminder file, set up Ctrl+Alt+Z Zen Mode shortcut.
+- **Decisions:** Chose MCP knowledge graph for cross-session memory storage. Bootstrap protocol (Section 5) is mandatory but passive documentation alone failed twice.
+- **Pending:** Prove that `.clinerules` in workspace root can break the bootstrap failure cycle.

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Target touchpad device name from 'hyprctl devices'
+DEVICE="asuf1205:00-2808:0106-touchpad"
+
+# Check the current status of the device
+STATUS_FILE="/tmp/touchpad_status"
+
+if [ ! -f "$STATUS_FILE" ]; then
+    echo "enabled" > "$STATUS_FILE"
+fi
+
+CURRENT_STATUS=$(cat "$STATUS_FILE")
+
+if [ "$CURRENT_STATUS" = "enabled" ]; then
+    hyprctl keyword "device[$DEVICE]:enabled" false
+    echo "disabled" > "$STATUS_FILE"
+    notify-send -u low "Touchpad" "Disabled"
+else
+    hyprctl keyword "device[$DEVICE]:enabled" true
+    echo "enabled" > "$STATUS_FILE"
+    notify-send -u low "Touchpad" "Enabled"
+fi
