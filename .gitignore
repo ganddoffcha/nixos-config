@@ -2,6 +2,7 @@
 # Application state (not config)
 .asdf/
 .cache/
+.chessdb/
 .clinerules
 .config/
 /.config/
@@ -16,26 +17,52 @@
 .config/spotify/
 .config/unity3d/
 /Documents/
+.elan/
 .factorio/
 .gemini/
+.gnome2/
+.hasplm/
+.local/
+.muse-sounds-manager/
+.nv/
+.var/
+.vscode/
+.vscode-shared/
 hardware-configuration.nix
-.local/share/
 # Machine-specific (auto-generated)
+Downloads/
 /mathematics_in_lean/
 memory-strategy.md
 .mono/
+Pictures/
+.pulse-cookie
+screenshot.png
+.texlive2024/
+.texlive2025/
+Videos/
+.xboardrc
 # Nix build artifacts
+.nix-defexpr/
 .nix-profile
 .npm/
 result
 result-*
 /scripts/
 scripts/hotspot
-# Secrets
+# Secrets & Keys
+.pki/
+.ssh/
 .steam/
 .steampath
 .steampid
 .x-plane/
 .zoo-memory/
+# Shell state (history, auto-generated)
+.bash_history
+.bash_history-*
+.bash_profile
+.bashrc
+.python_history
+.zprofile
 .zshenv
 .zshrc
