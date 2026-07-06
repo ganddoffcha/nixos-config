@@ -1,0 +1,50 @@
+{
+  "files.watcherExclude": {
+    "**/.cache/**": true,
+    "**/.cache": true,
+    "**/.config/BraveSoftware/**": true,
+    "**/.config/chromium/**": true,
+    "**/.config/spotify/**": true,
+    "**/.config/obs-studio/**": true,
+    "**/.config/GIMP/**": true,
+    "**/.config/unity3d/**": true,
+    "**/.config/dconf/**": true,
+    "**/.local/**": true,
+    "**/.local": true,
+    "**/.steam/**": true,
+    "**/.var/**": true,
+    "**/Documents/**": true,
+    "**/Documents": true,
+    "**/Downloads/**": true,
+    "**/Pictures/**": true,
+    "**/Videos/**": true,
+    "**/.nix-profile/**": true,
+    "**/result": true,
+    "**/result-*": true,
+    "**/.npm/**": true,
+    "**/.texlive*/**": true,
+    "**/.elan/**": true,
+    "**/.chessdb/**": true,
+    "**/.muse-sounds-manager/**": true
+  },
+  "search.exclude": {
+    "**/.cache": true,
+    "**/.local": true,
+    "**/.config": true,
+    "**/Documents": true,
+    "**/Downloads": true,
+    "**/Pictures": true,
+    "**/Videos": true,
+    "**/.steam": true,
+    "**/.var": true,
+    "**/result": true,
+    "**/result-*": true
+  },
+  "files.exclude": {
+    "**/.cache": true,
+    "**/.steam": true,
+    "**/.var": true,
+    "**/result": true,
+    "**/result-*": true
+  }
+}
