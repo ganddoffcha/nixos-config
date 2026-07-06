@@ -231,6 +231,24 @@
 
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
+
+      # ── Syntax highlighting colors ──────────────────────────────────
+      # Home-manager's +=() clears defaults, so set highlighters explicitly
+      ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor regexp root line)
+      ZSH_HIGHLIGHT_STYLES[command]='fg=green,bold'
+      ZSH_HIGHLIGHT_STYLES[builtin]='fg=green'
+      ZSH_HIGHLIGHT_STYLES[alias]='fg=cyan,bold'
+      ZSH_HIGHLIGHT_STYLES[function]='fg=blue,bold'
+      ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=red,bold'
+      ZSH_HIGHLIGHT_STYLES[path]='fg=white,underline'
+      ZSH_HIGHLIGHT_STYLES[globbing]='fg=yellow'
+      ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=blue'
+      ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=yellow'
+      ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=yellow'
+      ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]='fg=yellow'
+      ZSH_HIGHLIGHT_STYLES[comment]='fg=black,bold'
+      ZSH_HIGHLIGHT_STYLES[redirection]='fg=magenta'
+      ZSH_HIGHLIGHT_STYLES[default]='none'
     '';
   };
 
