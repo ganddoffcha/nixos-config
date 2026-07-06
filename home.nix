@@ -116,6 +116,7 @@
 
     # ── Development ─────────────────────────────────────────────────────
     git
+    gh
     python3
     elan
     openssl
