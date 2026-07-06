@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   # Allow unfree packages (vscode, spotify, etc.)
@@ -411,6 +411,19 @@
     Install = {
       WantedBy = [ "paths.target" ];
     };
+  };
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # POST-REBUILD — run auto-refresh after home-manager activation so
+  # the monitor mode is corrected immediately (Hyprland config reloads
+  # during rebuild can reset it to the wrong refresh rate).
+  # ═══════════════════════════════════════════════════════════════════════
+  home.activation = lib.mkAfter {
+    autoRefresh = ''
+      if [ -x "$HOME/scripts/auto-refresh.sh" ]; then
+        "$HOME/scripts/auto-refresh.sh" || true
+      fi
+    '';
   };
 
   # ═══════════════════════════════════════════════════════════════════════
