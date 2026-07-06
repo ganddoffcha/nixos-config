@@ -231,9 +231,11 @@
 
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
-
+    '';
+    initExtra = ''
       # ── Syntax highlighting colors ──────────────────────────────────
-      # Home-manager's +=() clears defaults, so set highlighters explicitly
+      # Must be in initExtra (after plugin source), not initContent.
+      # Home-manager's +=() clears defaults; reset highlighters explicitly.
       ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor regexp root line)
       ZSH_HIGHLIGHT_STYLES[command]='fg=green,bold'
       ZSH_HIGHLIGHT_STYLES[builtin]='fg=green'
