@@ -41,6 +41,7 @@
     tree
     wget
     direnv
+    dash
 
     # ── System Monitoring ───────────────────────────────────────────────
     htop

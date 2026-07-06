@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # NixOS rebuild wrapper — syncs config to /etc/nixos/, rebuilds, then
 # commits and pushes the config repo.
 #
@@ -9,11 +9,16 @@
 #
 # Managed by home-manager — do not edit directly.
 
-set -euo pipefail
+set -eu
 
 REPO_DIR="$HOME"
 ETC_DIR="/etc/nixos"
 ACTION="${1:-switch}"
+
+# Shift past the action so "$@" contains remaining args for nixos-rebuild
+if [ $# -gt 0 ]; then
+    shift
+fi
 
 # ── Sync config files to /etc/nixos/ ─────────────────────────────────
 
@@ -25,7 +30,7 @@ sudo cp -r "$REPO_DIR/dotfiles/" "$ETC_DIR/dotfiles/"
 # ── Rebuild ──────────────────────────────────────────────────────────
 
 echo "==> Running nixos-rebuild $ACTION ..."
-sudo nixos-rebuild "$ACTION" "${@:2}"
+sudo nixos-rebuild "$ACTION" "$@"
 
 # ── Git commit (only if rebuild succeeded) ────────────────────────────
 

@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Power profile auto-switcher: toggles eye candy based on AC status.
 # Battery → minimal (60Hz, no animations/blur/shadows)
 # Charger → full eye candy (240Hz, animations/blur/shadows)
 # Managed by home-manager — do not edit directly.
 
-set -euo pipefail
+set -eu
 
 MONITOR="eDP-1"
 MODE_BATTERY="2560x1600@60"
@@ -18,8 +18,8 @@ ac_online() {
     # More reliable than BAT0/status which reports "Not charging" when
     # the battery is at its charge threshold (e.g. ASUS battery health 80% cap).
     for psu in /sys/class/power_supply/*/; do
-        if [[ "$(cat "$psu/type" 2>/dev/null)" == "Mains" ]] && \
-           [[ "$(cat "$psu/online" 2>/dev/null)" == "1" ]]; then
+        if [ "$(cat "$psu/type" 2>/dev/null)" = "Mains" ] && \
+           [ "$(cat "$psu/online" 2>/dev/null)" = "1" ]; then
             return 0
         fi
     done
@@ -66,8 +66,8 @@ fi
 actual_hz=$(current_refresh_rate)
 
 # Apply if the monitor doesn't match the expected refresh rate
-if [[ "$actual_hz" != "$expected_hz" ]]; then
-    if [[ "$desired" == "charger" ]]; then
+if [ "$actual_hz" != "$expected_hz" ]; then
+    if [ "$desired" = "charger" ]; then
         apply_charger
     else
         apply_battery

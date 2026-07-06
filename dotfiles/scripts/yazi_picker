@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Create a temporary file
 tmpfile=$(mktemp)
@@ -9,6 +9,6 @@ ghostty -e yazi --chooser-file="$tmpfile" > /dev/null 2>&1
 if [ -s "$tmpfile" ]; then
     # 'cat' the file, then 'echo' to ensure a final newline for the shell
     cat "$tmpfile"
-    echo ""
+    echo
     rm "$tmpfile"
 fi
