@@ -310,6 +310,7 @@
     ASDF_DATA_DIR = "${config.xdg.dataHome}/asdf";
     ELAN_HOME = "${config.xdg.dataHome}/elan";
     npm_config_cache = "${config.xdg.cacheHome}/npm";
+    MONO_REGISTRY_PATH = "${config.xdg.dataHome}/mono";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
