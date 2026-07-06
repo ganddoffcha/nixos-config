@@ -254,9 +254,6 @@
     enable = true;
   };
 
-  # starship config — managed by home-manager
-  xdg.configFile."starship.toml".source = ./dotfiles/starship.toml;
-
   # ═══════════════════════════════════════════════════════════════════════
   # DIRENV
   # ═══════════════════════════════════════════════════════════════════════
