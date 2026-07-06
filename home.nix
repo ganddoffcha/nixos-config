@@ -286,14 +286,28 @@
 
   systemd.user.timers.auto-refresh = {
     Unit = {
-      Description = "Auto-refresh power profile poller";
+      Description = "Auto-refresh power profile poller (fallback)";
     };
     Timer = {
       OnActiveSec = "2s";
-      OnUnitActiveSec = "5s";
+      OnUnitActiveSec = "30s";  # udev triggers instant; timer is fallback
     };
     Install = {
       WantedBy = [ "timers.target" ];
+    };
+  };
+
+  # Instant trigger via udev → flag file → path unit
+  systemd.user.paths.auto-refresh-instant = {
+    Unit = {
+      Description = "Watch for power supply changes (udev flag)";
+    };
+    Path = {
+      PathChanged = "/tmp/power-supply-event";
+      Unit = "auto-refresh.service";
+    };
+    Install = {
+      WantedBy = [ "paths.target" ];
     };
   };
 

@@ -165,13 +165,13 @@
   # PCIe ASPM — performance on AC, powersupersave on battery
   # ═══════════════════════════════════════════════════════════════════════
   services.udev.extraRules = ''
-    # AC plugged in → PCIe max performance
+    # AC plugged in → PCIe max performance + trigger refresh
     SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="1", \
-      RUN+="${pkgs.bash}/bin/bash -c 'echo performance > /sys/module/pcie_aspm/parameters/policy'"
+      RUN+="${pkgs.bash}/bin/bash -c 'echo performance > /sys/module/pcie_aspm/parameters/policy; touch /tmp/power-supply-event; chown gc:users /tmp/power-supply-event'"
 
-    # AC unplugged → PCIe max power saving
+    # AC unplugged → PCIe max power saving + trigger refresh
     SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="0", \
-      RUN+="${pkgs.bash}/bin/bash -c 'echo powersupersave > /sys/module/pcie_aspm/parameters/policy'"
+      RUN+="${pkgs.bash}/bin/bash -c 'echo powersupersave > /sys/module/pcie_aspm/parameters/policy; touch /tmp/power-supply-event; chown gc:users /tmp/power-supply-event'"
   '';
 
   # ═══════════════════════════════════════════════════════════════════════
