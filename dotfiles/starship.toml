@@ -1,51 +1,29 @@
-# Starship prompt — pastel-powerline preset, customized
+# Starship prompt — minimal and colorful
 # https://starship.rs/config/
-
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = """
-[](#9A348E)\
-$os\
-$username\
-[](bg:#DA627D fg:#9A348E)\
+[](fg:#DA627D)\
 $directory\
 [](fg:#DA627D bg:#FCA17D)\
 $git_branch\
 $git_status\
-[](fg:#FCA17D bg:#86BBD8)\
-$c\
-$cpp\
-$golang\
-$java\
-$nodejs\
-$python\
-$rlang\
-$rust\
+[](fg:#FCA17D)\
+$fill\
+[](fg:#86BBD8)\
 $nix_shell\
-[](fg:#86BBD8 bg:#06969A)\
-$docker_context\
-[](fg:#06969A bg:#33658A)\
-$time\
-[ ](fg:#33658A)\
+$cmd_duration\
+[](fg:#86BBD8)\
 """
 
 add_newline = true
 
-[username]
-show_always = true
-style_user = "bg:#9A348E"
-style_root = "bg:#9A348E"
-format = '[$user ]($style)'
-
-[os]
-style = "bg:#9A348E"
-disabled = true
-
 [directory]
 style = "bg:#DA627D"
 format = "[ $path ]($style)"
-truncation_length = 3
+truncation_length = 2
 truncation_symbol = "…/"
+truncate_to_repo = true
 
 [directory.substitutions]
 "Documents" = "󰈙 "
@@ -53,67 +31,28 @@ truncation_symbol = "…/"
 "Music" = " "
 "Pictures" = " "
 
-[c]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[cpp]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[docker_context]
-symbol = " "
-style = "bg:#06969A"
-format = '[ $symbol $context ]($style)'
-
 [git_branch]
 symbol = ""
 style = "bg:#FCA17D"
-format = '[ $symbol $branch ]($style)'
+format = '[$symbol $branch]($style)'
 
 [git_status]
 style = "bg:#FCA17D"
-format = '[$all_status$ahead_behind ]($style)'
-
-[golang]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[java]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[nodejs]
-symbol = ""
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[python]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[rlang]
-symbol = "ﳒ "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[rust]
-symbol = ""
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+format = '[$all_status$ahead_behind]($style)'
 
 [nix_shell]
 symbol = " "
 style = "bg:#86BBD8"
-format = '[ $symbol $state ]($style)'
+format = '[$symbol]($style)'
 
-[time]
+[cmd_duration]
+min_time = 3000
+style = "bg:#86BBD8"
+format = '[ $duration]($style)'
+
+[line_break]
 disabled = false
-time_format = "%R"
-style = "bg:#33658A"
-format = '[ ♥ $time ]($style)'
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[>](bold red)"
