@@ -1,0 +1,11 @@
+# Catppuccin Mocha
+background-color=#1e1e2ecc
+border-color=#89b4fa
+text-color=#cdd6f4
+progress-color=over #313244
+
+[urgency=low]
+border-color=#45475a
+
+[urgency=critical]
+border-color=#f38ba8

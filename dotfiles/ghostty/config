@@ -1,6 +1,5 @@
 background-opacity = 0.67
 #font-family = "Shanggu Mono"
 font-size = 12
-background = #000000
 theme = Catppuccin Mocha
 gtk-single-instance = true

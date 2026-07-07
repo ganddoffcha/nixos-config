@@ -264,7 +264,7 @@
   system.stateVersion = "24.11";
 
   # ═══════════════════════════════════════════════════════════════════════
-  # STYLIX — system-wide theming
+  # STYLIX — system-wide theming (targets configured in home.nix)
   # ═══════════════════════════════════════════════════════════════════════
   stylix = {
     enable = true;
