@@ -38,7 +38,7 @@ with open('$yaml') as f:
     text = f.read()
 for i in range(16):
     key = f'base{i:02x}'
-    m = re.search(rf'^\s*{key}:\s*\"?#?([0-9a-fA-F]{{6}})\"?', text, re.MULTILINE)
+    m = re.search(rf'(?i)^\s*{key}:\s*\"?#?([0-9a-fA-F]{{6}})\"?', text, re.MULTILINE)
     if m:
         print(m.group(1))
     else:
@@ -54,10 +54,13 @@ substitute() {
     content=$(cat)
     for i in $(seq 0 15); do
         local hex="${c[$i]}"
-        local key
-        key=$(printf 'base%02x' "$i")
-        content="${content//"{{${key}}}"/#${hex}}"
-        content="${content//"{{x${key}}}"/${hex}}"
+        local key_lower key_upper
+        key_lower=$(printf 'base%02x' "$i")
+        key_upper=$(printf 'base%02X' "$i")
+        content="${content//"{{${key_lower}}}"/#${hex}}"
+        content="${content//"{{${key_upper}}}"/#${hex}}"
+        content="${content//"{{x${key_lower}}}"/${hex}}"
+        content="${content//"{{x${key_upper}}}"/${hex}}"
     done
     echo "$content"
 }
