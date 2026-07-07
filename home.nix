@@ -1,20 +1,32 @@
 { config, lib, pkgs, ... }:
 
 let
-  # Stylix colour palette → used to substitute {{base00}}…{{base0F}}
-  # placeholders in config file templates.  Change dotfiles/current-theme
-  # and rebuild to switch themes everywhere automatically.
+  # Stylix colour palette → used to substitute placeholders in config
+  # templates.  Change dotfiles/current-theme and rebuild to switch
+  # themes everywhere automatically.
+  #
+  # {{base00}}…{{base0F}}  →  with # prefix (CSS, kitty, bemenu, etc.)
+  # {{xbase00}}…{{xbase0F}} →  raw hex, no # (hyprland rgba/rgb)
   palette = config.lib.stylix.colors.withHashtag;
+  stripHash = c: lib.removePrefix "#" c;
   subst = str:
     builtins.replaceStrings
       [ "{{base00}}" "{{base01}}" "{{base02}}" "{{base03}}"
         "{{base04}}" "{{base05}}" "{{base06}}" "{{base07}}"
         "{{base08}}" "{{base09}}" "{{base0A}}" "{{base0B}}"
-        "{{base0C}}" "{{base0D}}" "{{base0E}}" "{{base0F}}" ]
+        "{{base0C}}" "{{base0D}}" "{{base0E}}" "{{base0F}}"
+        "{{xbase00}}" "{{xbase01}}" "{{xbase02}}" "{{xbase03}}"
+        "{{xbase04}}" "{{xbase05}}" "{{xbase06}}" "{{xbase07}}"
+        "{{xbase08}}" "{{xbase09}}" "{{xbase0A}}" "{{xbase0B}}"
+        "{{xbase0C}}" "{{xbase0D}}" "{{xbase0E}}" "{{xbase0F}}" ]
       [ palette.base00 palette.base01 palette.base02 palette.base03
         palette.base04 palette.base05 palette.base06 palette.base07
         palette.base08 palette.base09 palette.base0A palette.base0B
-        palette.base0C palette.base0D palette.base0E palette.base0F ]
+        palette.base0C palette.base0D palette.base0E palette.base0F
+        (stripHash palette.base00) (stripHash palette.base01) (stripHash palette.base02) (stripHash palette.base03)
+        (stripHash palette.base04) (stripHash palette.base05) (stripHash palette.base06) (stripHash palette.base07)
+        (stripHash palette.base08) (stripHash palette.base09) (stripHash palette.base0A) (stripHash palette.base0B)
+        (stripHash palette.base0C) (stripHash palette.base0D) (stripHash palette.base0E) (stripHash palette.base0F) ]
       str;
 in {
   # Allow unfree packages (vscode, spotify, etc.)
