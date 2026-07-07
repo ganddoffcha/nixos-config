@@ -40,6 +40,7 @@
     dash
 
     # ── Modern CLI Tools ─────────────────────────────────────────────────
+    scx.full
     eza
     bat
     ripgrep
