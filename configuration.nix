@@ -271,45 +271,6 @@
   services.logind.settings.Login.HandleLidSwitchExternalPower = "hibernate";
 
   # ═══════════════════════════════════════════════════════════════════════
-  # BACKLIGHT — persist brightness across sleep/hibernate cycles
-  # systemd-backlight only saves at shutdown → sleep needs its own hook
-  # ═══════════════════════════════════════════════════════════════════════
-  systemd.services.backlight-sleep = {
-    description = "Save/restore backlight brightness across sleep/hibernate";
-    before = [ "sleep.target" ];
-    wantedBy = [ "sleep.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "backlight-sleep-save" ''
-        #!/bin/sh
-        BACKLIGHT=/sys/class/backlight/nvidia_wmi_ec_backlight/brightness
-        SAVED=/tmp/backlight-sleep-state
-        if [ -r "$BACKLIGHT" ]; then
-          cat "$BACKLIGHT" > "$SAVED"
-        fi
-      '';
-      ExecStop = pkgs.writeShellScript "backlight-sleep-restore" ''
-        #!/bin/sh
-        SAVED=/tmp/backlight-sleep-state
-        [ -r "$SAVED" ] || exit 0
-
-        # The NVIDIA WMI backlight EC channel isn't responsive immediately
-        # after S4 resume — writes to sysfs succeed but actual_brightness
-        # doesn't change. Background a delayed restore to give the EC
-        # time to fully re-initialize (~10s empirically).
-        (
-          sleep 10
-          if [ -r "$SAVED" ]; then
-            ${pkgs.brightnessctl}/bin/brightnessctl -d nvidia_wmi_ec_backlight \
-              set "$(cat "$SAVED")" >/dev/null 2>&1
-          fi
-        ) &
-      '';
-    };
-  };
-
-  # ═══════════════════════════════════════════════════════════════════════
   # NIX SETTINGS
   # ═══════════════════════════════════════════════════════════════════════
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
