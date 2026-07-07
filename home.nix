@@ -477,8 +477,10 @@ in {
   xdg.configFile."nvim/lua/user/keymaps.lua".source = ./dotfiles/nvim/lua/user/keymaps.lua;
   xdg.configFile."nvim/lua/user/autocmds.lua".source = ./dotfiles/nvim/lua/user/autocmds.lua;
   xdg.configFile."nvim/lua/user/plugins.lua".source = ./dotfiles/nvim/lua/user/plugins.lua;
+  xdg.configFile."nvim/colors/base16-stylix.vim".text = subst (builtins.readFile ./dotfiles/nvim/colors/base16-stylix.vim);
   xdg.configFile."qutebrowser/config.py".source = ./dotfiles/qutebrowser/config.py;
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
+  xdg.configFile."yazi/theme.toml".text = subst (builtins.readFile ./dotfiles/yazi/theme.toml);
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
 

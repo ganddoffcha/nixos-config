@@ -18,3 +18,6 @@ require("user.options")
 require("user.keymaps")
 require("user.autocmds")
 require("lazy").setup("user.plugins")
+
+-- Override with Stylix-generated base16 colourscheme (follows system theme)
+vim.cmd("colorscheme base16-stylix")
