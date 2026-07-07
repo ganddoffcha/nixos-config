@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Text editor
+Exec=ghostty -e nvim %f
+MimeType=text/plain;text/x-shellscript;text/markdown;text/x-makefile;text/x-csrc;text/x-python;
+NoDisplay=true

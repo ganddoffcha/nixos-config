@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=File manager
+Exec=ghostty -e yazi %f
+MimeType=inode/directory;
+NoDisplay=true

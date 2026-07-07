@@ -447,6 +447,17 @@
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
+
+  # ── MIME associations ──────────────────────────────────────────────────
+  xdg.configFile."mimeapps.list".source = ./dotfiles/mimeapps.list;
+
+  # ── Default application handlers (.desktop files) ──────────────────────
+  xdg.dataFile."applications/img.desktop".source = ./dotfiles/applications/img.desktop;
+  xdg.dataFile."applications/pdf.desktop".source = ./dotfiles/applications/pdf.desktop;
+  xdg.dataFile."applications/text.desktop".source = ./dotfiles/applications/text.desktop;
+  xdg.dataFile."applications/file.desktop".source = ./dotfiles/applications/file.desktop;
+  xdg.dataFile."applications/ckan-handler.desktop".source = ./dotfiles/applications/ckan-handler.desktop;
+
   # ═══════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT — auto-switch compositor settings on AC state change
   # ═══════════════════════════════════════════════════════════════════════

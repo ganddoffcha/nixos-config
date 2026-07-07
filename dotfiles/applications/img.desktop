@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Image viewer
+Exec=imv %f
+MimeType=image/png;image/jpeg;image/gif;image/svg+xml;image/webp;
+NoDisplay=true

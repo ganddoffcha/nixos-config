@@ -1,0 +1,27 @@
+[Default Applications]
+text/plain=text.desktop
+text/x-shellscript=text.desktop
+text/markdown=text.desktop
+text/x-makefile=text.desktop
+text/x-csrc=text.desktop
+text/x-python=text.desktop
+application/pdf=pdf.desktop
+application/postscript=pdf.desktop
+image/png=img.desktop
+image/jpeg=img.desktop
+image/gif=img.desktop
+image/svg+xml=img.desktop
+image/webp=img.desktop
+video/mp4=mpv.desktop
+video/x-matroska=mpv.desktop
+video/webm=mpv.desktop
+video/x-msvideo=mpv.desktop
+audio/mpeg=mpv.desktop
+audio/flac=mpv.desktop
+audio/ogg=mpv.desktop
+inode/directory=file.desktop
+x-scheme-handler/mailto=brave-browser.desktop
+x-scheme-handler/webcal=brave-browser.desktop
+x-scheme-handler/tg=org.telegram.desktop.desktop
+x-scheme-handler/tonsite=org.telegram.desktop.desktop
+x-scheme-handler/ckan=ckan-handler.desktop

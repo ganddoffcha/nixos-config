@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=CKAN Launcher
+Exec=ckan gui %u
+MimeType=x-scheme-handler/ckan;
+NoDisplay=true
