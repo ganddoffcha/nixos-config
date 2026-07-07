@@ -451,12 +451,39 @@
   # ── MIME associations ──────────────────────────────────────────────────
   xdg.configFile."mimeapps.list".source = ./dotfiles/mimeapps.list;
 
-  # ── Default application handlers (.desktop files) ──────────────────────
-  xdg.dataFile."applications/img.desktop".source = ./dotfiles/applications/img.desktop;
-  xdg.dataFile."applications/pdf.desktop".source = ./dotfiles/applications/pdf.desktop;
-  xdg.dataFile."applications/text.desktop".source = ./dotfiles/applications/text.desktop;
-  xdg.dataFile."applications/file.desktop".source = ./dotfiles/applications/file.desktop;
-  xdg.dataFile."applications/ckan-handler.desktop".source = ./dotfiles/applications/ckan-handler.desktop;
+  # ── Default application handlers — generated from Nix, no raw files ────
+  xdg.desktopEntries = {
+    img = {
+      name = "Image viewer";
+      exec = "imv %f";
+      mimeType = [ "image/png" "image/jpeg" "image/gif" "image/svg+xml" "image/webp" ];
+      noDisplay = true;
+    };
+    pdf = {
+      name = "PDF reader";
+      exec = "zathura %u";
+      mimeType = [ "application/pdf" "application/postscript" ];
+      noDisplay = true;
+    };
+    text = {
+      name = "Text editor";
+      exec = "ghostty -e nvim %f";
+      mimeType = [ "text/plain" "text/x-shellscript" "text/markdown" "text/x-makefile" "text/x-csrc" "text/x-python" ];
+      noDisplay = true;
+    };
+    file = {
+      name = "File manager";
+      exec = "ghostty -e yazi %f";
+      mimeType = [ "inode/directory" ];
+      noDisplay = true;
+    };
+    "ckan-handler" = {
+      name = "CKAN Launcher";
+      exec = "ckan gui %u";
+      mimeType = [ "x-scheme-handler/ckan" ];
+      noDisplay = true;
+    };
+  };
 
   # ═══════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT — auto-switch compositor settings on AC state change
