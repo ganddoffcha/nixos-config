@@ -292,16 +292,22 @@
       ExecStop = pkgs.writeShellScript "backlight-sleep-restore" ''
         #!/bin/sh
         BACKLIGHT=/sys/class/backlight/nvidia_wmi_ec_backlight/brightness
+        ACTUAL=/sys/class/backlight/nvidia_wmi_ec_backlight/actual_brightness
         SAVED=/tmp/backlight-sleep-state
-        # NVIDIA driver re-initializes backlight ~400ms after S4 resume.
-        # Sleep first to let it finish, then restore our saved value.
+        [ -r "$SAVED" ] || exit 0
+        TARGET=$(cat "$SAVED")
+
+        # After S4 resume, the NVIDIA WMI backlight accepts writes but the
+        # EC may not apply them until internal init completes. Poll until
+        # actual_brightness matches what we wrote.
         sleep 1
-        for i in 1 2 3 4 5 6 7 8 9 10; do
+        for i in $(seq 1 20); do
           if [ -w "$BACKLIGHT" ]; then
-            if [ -r "$SAVED" ]; then
-              cat "$SAVED" > "$BACKLIGHT"
+            echo "$TARGET" > "$BACKLIGHT" 2>/dev/null
+            sleep 0.1
+            if [ -r "$ACTUAL" ] && [ "$(cat "$ACTUAL")" = "$TARGET" ]; then
+              exit 0
             fi
-            exit 0
           fi
           sleep 0.2
         done
