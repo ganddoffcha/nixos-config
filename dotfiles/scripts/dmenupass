@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # GUI askpass for sudo using bemenu
 # Reads password via bemenu (dmenu-compatible password prompt)
 bemenu \
