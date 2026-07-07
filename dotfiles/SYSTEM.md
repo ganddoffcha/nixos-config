@@ -58,7 +58,70 @@ rebuild [-m "message"]
 - **Shell**: zsh with starship, zoxide, fzf, atuin
 - **WM**: Hyprland (launched via uwsm from .zprofile)
 - **Terminal**: ghostty (primary), alacritty, kitty also installed
-- **Editor**: neovim (nvim), vscode, emacs also installed
+- **Editor**: neovim (nvim, init.lua migrated from init.vim 2026-07-06), vscode, emacs also installed
 - **Browser**: brave (primary), chromium, qutebrowser also installed
 - **Filesystem root**: ext4 on nvme1n1p2
 - **Boot**: systemd-boot, EFI
+- **Config style**: Old-style NixOS config (no flake.nix at repo root), despite `nix.settings.experimental-features = ["nix-command" "flakes"]`
+- **Home-manager**: Integrated as NixOS module (`<home-manager/nixos>` import), NOT standalone
+
+## Power Profile Auto-Refresh System
+
+Complex subsystem — do not break without understanding:
+
+```
+AC adapter event (udev)
+  → /etc/udev/rules.d/... matches power_supply subsystem
+  → Sets PCIe ASPM policy + touches /tmp/power-supply-event (chown gc:users)
+  → systemd user path unit "auto-refresh-instant.path" watches /tmp/power-supply-event
+  → Triggers auto-refresh.service (oneshot)
+  → Runs ~/scripts/auto-refresh.sh
+  → Queries AC state via /sys/class/power_supply/ADP0/online (Mains-type, NOT USB!)
+  → Sets monitor refresh rate: 240Hz on AC, 60Hz on battery
+  → Reloads Hyprland config to apply
+
+Fallback: systemd user timer polls every 30s (in case udev rule misses an event)
+Post-rebuild: home.activation runs auto-refresh.sh after every rebuild (Hyprland config reloads can reset refresh rate)
+```
+
+**Critical detail**: ADP0 is the AC adapter (type=Mains). A previous bug used the wrong power supply device (USB-C/Battery-type) which always reported offline.
+
+## Rebuild Script Details
+
+Located at `dotfiles/scripts/rebuild`. Key behaviors:
+
+- **`git add` list is hardcoded**: `configuration.nix home.nix dotfiles/ .gitignore`. New top-level files (e.g., README.md, flake.nix) will NOT be auto-staged by `rebuild`. Must `git add` them manually.
+- **Supports `-m` flag** (added 2026-07-07): `rebuild -m "descriptive message"` for custom commit messages
+- **Old comment says "Managed by home-manager — do not edit directly"** — this is misleading. The file is in `dotfiles/scripts/` which IS home-manager managed, but editing the source in the git repo is correct. The comment refers to not editing the symlinked copy in the Nix store.
+
+## Rules Zoo Must Follow
+
+1. **NEVER edit `/etc/nixos/` directly** — edits will be clobbered by `rebuild`'s sync step. Always edit `/home/gc/` (git repo).
+2. **VSCode configs must NOT be home-manager managed** — Nix store symlinks are read-only. VSCode writes to settings.json/keybindings.json at runtime. They live at `~/.config/Code/User/` and are NOT in home.nix. (Removed from home-manager session k, 2026-07-06.)
+3. **Use `rebuild` script, not raw `nixos-rebuild`** — ensures sync → build → commit → push pipeline.
+4. **Test hibernation with `systemctl hibernate` before trusting lid-close** — resume_offset must be correct or system won't wake.
+5. **ADP0 is the AC adapter** — for any power-sensing code, use `/sys/class/power_supply/ADP0/online` (type=Mains), not other power supplies.
+
+## Known Pitfalls
+
+| Pitfall | Symptom | Fix |
+|---------|---------|-----|
+| Editing /etc/nixos/ directly | Changes vanish on next rebuild | Edit /home/gc/ instead |
+| Adding new top-level file to repo | Not committed by rebuild script | `git add` manually, then `rebuild` |
+| VSCode settings in home-manager | VSCode can't write settings, errors on start | Keep them out of home.nix, manage manually or via VSCode sync |
+| Wrong power supply device for AC detection | auto-refresh always thinks on battery | Use ADP0 (Mains-type), not BAT0/USB |
+| Forgetting resume_offset after swapfile recreation | Hibernation fails silently | Check with `filefrag -v /swapfile`, update configuration.nix |
+| Hyprland config reload during rebuild | Monitor refresh rate resets to default | auto-refresh.sh runs in home.activation post-rebuild |
+
+## Pending / Known Issues
+
+- None currently open (as of 2026-07-07 session l)
+- Historical: `git remote -v` vs `git remote -q` bug in rebuild script — FIXED (was using `-q` which doesn't exist, now `-v`)
+
+## User Preferences
+
+- **Launcher**: bemenu (explicitly dislikes wofo)
+- **Workspace**: `~/` is the preferred directory (moved from `~/Desktop/` session d, 2026-07-06)
+- **Editor**: neovim with Lua config
+- **Git**: descriptive commit messages preferred over auto-generated timestamps
+- **Memory**: expects Zoo to proactively remember system details without being reminded
