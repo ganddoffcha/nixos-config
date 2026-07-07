@@ -265,8 +265,8 @@
   # ═══════════════════════════════════════════════════════════════════════
   # LOGIND — lid-close → hibernate instead of suspend
   # ═══════════════════════════════════════════════════════════════════════
-  services.logind.lidSwitch = "hibernate";
-  services.logind.lidSwitchExternalPower = "hibernate";
+  services.logind.settings.Login.HandleLidSwitch = "hibernate";
+  services.logind.settings.Login.HandleLidSwitchExternalPower = "hibernate";
 
   # ═══════════════════════════════════════════════════════════════════════
   # NIX SETTINGS
