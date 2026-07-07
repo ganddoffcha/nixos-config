@@ -10,18 +10,16 @@
 set -eu
 
 THEME_FILE="$HOME/dotfiles/current-theme"
+CACHE_FILE="$HOME/.cache/base16-themes-path"
 
-# Find the base16-schemes directory.  It lives in the Nix store so the
-# hash changes on update, but we can locate it via a known theme file.
-_find_base16_dir() {
-    # Fast path: look for any file named "everforest.yaml" in the store.
-    # Its parent directory is the themes directory.
-    find /nix/store/ -maxdepth 6 -name everforest.yaml -type f 2>/dev/null \
-        | head -1 | xargs dirname 2>/dev/null
-}
-
-BASE16_DIR="$(_find_base16_dir)"
-[ -n "$BASE16_DIR" ] || die "Cannot find base16-schemes in the Nix store.  Try rebuilding first."
+# Read the base16-schemes directory from the cache (written by home-manager
+# activation).  Falls back to a slow find if the cache is missing.
+if [ -f "$CACHE_FILE" ]; then
+    BASE16_DIR="$(cat "$CACHE_FILE")"
+else
+    BASE16_DIR="$(find /nix/store/ -maxdepth 6 -name everforest.yaml -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null)"
+fi
+[ -n "$BASE16_DIR" ] && [ -d "$BASE16_DIR" ] || die "Cannot find base16-schemes. Try rebuilding."
 
 list_themes() {
     ls "$BASE16_DIR" | sed 's/\.yaml$//' | sort
@@ -38,7 +36,6 @@ die() {
 
 # Print a colour swatch block (24-bit true colour terminal)
 swatch() {
-    # $1 = hex colour (e.g. "1e1e2e"), $2 = label
     hex="$1"
     label="${2:-}"
     r=$((0x${hex:0:2}))
@@ -55,20 +52,17 @@ preview_theme() {
 
     echo "Theme: $theme"
     echo "─────────────────────────────"
-    # Extract palette from YAML (simple grep, no YAML parser needed)
     for key in base00 base01 base02 base03 base04 base05 base06 base07 \
                base08 base09 base0A base0B base0C base0D base0E base0F; do
         hex=$(grep "^\s*$key:" "$f" | head -1 | sed 's/.*"\([^"]*\)".*/\1/;s/.*:\s*\(\S\+\).*/\1/')
         [ -n "$hex" ] && swatch "$hex" "$key" || echo "  $key: (not defined)"
     done
     echo "─────────────────────────────"
-    # Show variant (dark/light)
     variant=$(grep 'variant:' "$f" | head -1 | sed 's/.*"\([^"]*\)".*/\1/;s/.*:\s*\(\S\+\).*/\1/')
     [ -n "$variant" ] && echo "Variant: $variant"
 }
 
 bemenu_picker() {
-    # Check if bemenu is available
     if command -v bemenu >/dev/null 2>&1; then
         choice=$(list_themes | bemenu -l 20 -p "Theme:")
     elif command -v fzf >/dev/null 2>&1; then

@@ -624,6 +624,11 @@ in {
         "$HOME/scripts/auto-refresh.sh" || true
       fi
     '';
+    # Cache the base16-schemes path so the theme preview script is instant
+    cacheBase16Path = ''
+      mkdir -p "$HOME/.cache"
+      echo "${pkgs.base16-schemes}/share/themes" > "$HOME/.cache/base16-themes-path"
+    '';
   };
 
   # ═══════════════════════════════════════════════════════════════════════
