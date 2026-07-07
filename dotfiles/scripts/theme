@@ -58,7 +58,7 @@ substitute() {
         local hex="${c[$i]}"
         local key_lower key_upper
         key_lower=$(printf 'base%02x' "$i")
-        key_upper=$(printf 'base%02X' "$i")
+        key_upper=$(printf 'base%02X' "$i")   # base0A, base0B, ...
         content="${content//"{{${key_lower}}}"/#${hex}}"
         content="${content//"{{${key_upper}}}"/#${hex}}"
         content="${content//"{{x${key_lower}}}"/${hex}}"
