@@ -33,6 +33,7 @@ hardware-configuration.nix
 Downloads/
 /mathematics_in_lean/
 memory-strategy.md
+SYSTEM.md
 .mono/
 Pictures/
 .pulse-cookie
