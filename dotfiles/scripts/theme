@@ -12,7 +12,7 @@
 #   Templates:    dotfiles/*/{config files} with {{base00}}…{{base0F}} placeholders
 #   Generated:    ~/.config/*/{config files} written at theme-switch time
 
-set -eu
+set -e
 
 THEME_FILE="$HOME/dotfiles/current-theme"
 CACHE_FILE="$HOME/.cache/base16-themes-path"
@@ -38,7 +38,7 @@ with open('$yaml') as f:
     text = f.read()
 for i in range(16):
     key = f'base{i:02x}'
-    m = re.search(rf'^{key}:\s*[\"']?([0-9a-fA-F]{{6}})', text, re.MULTILINE)
+    m = re.search(rf'^\s*{key}:\s*\"?#?([0-9a-fA-F]{{6}})\"?', text, re.MULTILINE)
     if m:
         print(m.group(1))
     else:

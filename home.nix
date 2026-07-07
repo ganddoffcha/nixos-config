@@ -626,7 +626,7 @@ import sys, re
 with open("'"$YAML"'") as f:
     text = f.read()
 for i in range(16):
-    m = re.search(r"^base%02x:\s*\"?([0-9a-fA-F]{6})\"?" % i, text, re.MULTILINE)
+    m = re.search(r"^\s*base%02x:\s*\"?#?([0-9a-fA-F]{6})\"?" % i, text, re.MULTILINE)
     print(m.group(1) if m else "ffffff")
 ' > /tmp/theme-colors.txt
       # Read colours into array
