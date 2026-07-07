@@ -11,7 +11,7 @@ ext="${file##*.}"
 dir=${file%/*}
 base="${file%.*}"
 
-cd "${dir}" || exit "1"
+cd "${dir}" || exit 1
 
 case "${ext}" in
     [0-9]) preconv "${file}" | refer -PS -e | groff -mandoc -T pdf > "${base}.pdf" ;;
@@ -29,7 +29,7 @@ case "${ext}" in
 	    [ -x "$(command -v groffdown)" ] && \
 	    groffdown -i "${file}" | groff -T pdf > "${base}.pdf" || \
 	    pandoc -t ms --highlight-style="kate" -s -o "${base}.pdf" "${file}" ;;
-    org) emacs "${file}" --batch -u "${USER}" -f org-latex-export-to-pdf ;;
+    org) emacs "${file}" --batch -u "${USER}" -f org-latex-export-to-pdf 2>/dev/null ;;
     py) python "${file}" ;;
     rink) rink -f "${file}" ;;
     [rR]md) Rscript -e "rmarkdown::render('${file}', quiet=TRUE)" ;;

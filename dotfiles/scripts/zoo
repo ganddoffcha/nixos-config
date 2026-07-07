@@ -1,4 +1,0 @@
-#!/bin/sh
-# Launch VSCode with ~/ as workspace.
-# Press Ctrl+Alt+Z once VSCode opens to launch Zoo Code in a new editor tab.
-nohup code ~/ -n > /dev/null 2>&1 &

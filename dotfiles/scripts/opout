@@ -5,10 +5,10 @@
 # running from vim.
 
 basename="${1%.*}"
-name=$(basename "$basename")      # Gets "foo.ext"
+name=$(basename "$basename")
 
 case "${*}" in
-	*.tex|*.sil|*.m[dse]|*.[rR]md|*.mom|*.[0-9]) target="$(getcomproot "$1" || echo "$1")" ; setsid -f zathura "out/$name".pdf >/dev/null 2>&1 ;;
+	*.tex|*.sil|*.m[dse]|*.[rR]md|*.mom|*.[0-9]) target="$(getcomproot "$1" || echo "$1")" ; target_name=$(basename "${target%.*}") ; setsid -f zathura "out/${target_name}".pdf >/dev/null 2>&1 ;;
 	*.html) setsid -f "$BROWSER" "$basename".html >/dev/null 2>&1 ;;
 	*.sent) setsid -f sent "$1" >/dev/null 2>&1 ;;
 esac

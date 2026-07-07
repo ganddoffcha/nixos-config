@@ -23,9 +23,9 @@ fi
 # ── Sync config files to /etc/nixos/ ─────────────────────────────────
 
 echo "==> Syncing configs to $ETC_DIR ..."
-sudo cp "$REPO_DIR/configuration.nix" "$ETC_DIR/configuration.nix"
-sudo cp "$REPO_DIR/home.nix" "$ETC_DIR/home.nix"
-sudo cp -rf "$REPO_DIR/dotfiles/" "$ETC_DIR/dotfiles/"
+sudo cp -f "$REPO_DIR/configuration.nix" "$ETC_DIR/configuration.nix"
+sudo cp -f "$REPO_DIR/home.nix" "$ETC_DIR/home.nix"
+sudo cp -rf "$REPO_DIR/dotfiles/"* "$ETC_DIR/dotfiles/"
 
 # ── Rebuild ──────────────────────────────────────────────────────────
 

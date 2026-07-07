@@ -49,6 +49,7 @@ result
 result-*
 /scripts/
 scripts/hotspot
+dotfiles/scripts/hotspot
 # Secrets & Keys
 .pki/
 .ssh/

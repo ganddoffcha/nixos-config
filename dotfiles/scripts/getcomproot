@@ -6,4 +6,4 @@
 # And the compiler script will run on that instead of the opened file.
 
 texroot="$(sed -n 's/^\s*%.*root\s*=\s*\(\S\+\).*/\1/p' "${1}")"
-[ -f "${texroot}" ] && readlink -f "${texroot}" || exit "1"
+[ -f "${texroot}" ] && readlink -f "${texroot}" || exit 1

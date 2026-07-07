@@ -130,6 +130,7 @@
     gh
     python3
     elan
+    emacs
     openssl
     nss
     nssTools
@@ -322,6 +323,9 @@
   # ═══════════════════════════════════════════════════════════════════════
   home.file.".config/zsh/.zshrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.zshrc";
 
+  # ── ZDOTDIR .zprofile — login shell only, starts Hyprland via uwsm ─────
+  xdg.configFile."zsh/.zprofile".source = ./dotfiles/zsh/.zprofile;
+
   # ═══════════════════════════════════════════════════════════════════════
   # DOTFILES — declaratively managed config files
   # ═══════════════════════════════════════════════════════════════════════
@@ -340,6 +344,13 @@
   # ── Terminal ──────────────────────────────────────────────────────────
   xdg.configFile."ghostty/config".source = ./dotfiles/ghostty/config;
 
+  # ── Launcher ──────────────────────────────────────────────────────────
+  xdg.configFile."wofi/config".source = ./dotfiles/wofi/config;
+  xdg.configFile."wofi/style.css".source = ./dotfiles/wofi/style.css;
+
+  # ── LaTeX ─────────────────────────────────────────────────────────────
+  xdg.configFile."latexmk/latexmkrc".source = ./dotfiles/latexmk/latexmkrc;
+
   # ── Screen color temperature ──────────────────────────────────────────
   xdg.configFile."gammastep/config.ini".source = ./dotfiles/gammastep/config.ini;
 
@@ -348,7 +359,6 @@
   home.file."memory-strategy.md".source = ./dotfiles/memory-strategy.md;
 
   # ── Scripts ───────────────────────────────────────────────────────────
-  home.file."scripts/zoo".source = ./dotfiles/scripts/zoo;
   home.file."scripts/compiler".source = ./dotfiles/scripts/compiler;
   home.file."scripts/getcomproot".source = ./dotfiles/scripts/getcomproot;
   home.file."scripts/hotspot".source = ./dotfiles/scripts/hotspot;
@@ -360,6 +370,7 @@
 
   # ── App configs ───────────────────────────────────────────────────────
   xdg.configFile."nvim/init.vim".source = ./dotfiles/nvim/init.vim;
+  xdg.configFile."qutebrowser/config.py".source = ./dotfiles/qutebrowser/config.py;
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   # ═══════════════════════════════════════════════════════════════════════

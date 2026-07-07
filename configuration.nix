@@ -198,14 +198,9 @@
   environment.systemPackages = with pkgs; [
     # Only packages that are genuinely system-level or needed before
     # home-manager activation. Everything else lives in home.nix.
-    git
-    neovim
-    wget
     curl
     psmisc
-    gzip
-    unzip
-    zip
+    rsync
   ];
 
   # ═══════════════════════════════════════════════════════════════════════
