@@ -110,7 +110,16 @@ apply_theme() {
     systemctl --user restart waybar.service 2>/dev/null || true
     systemctl --user restart hyprpaper.service 2>/dev/null || true
     makoctl reload 2>/dev/null || true
-    pkill -SIGUSR1 kitty 2>/dev/null || true   # kitty live-reload colours
+    # Terminal emulators — SIGUSR1 triggers config reload
+    pkill -SIGUSR1 kitty 2>/dev/null || true
+    pkill -SIGUSR1 ghostty 2>/dev/null || true
+    # Running Neovim instances — reload colourscheme
+    shopt -s nullglob 2>/dev/null
+    for socket in /tmp/nvim.*/0; do
+        [ -S "$socket" ] || continue
+        nvim --server "$socket" --remote-send ':colorscheme base16-stylix<CR>' 2>/dev/null || true
+    done
+    shopt -u nullglob 2>/dev/null
 
     # Write the theme name to the imperative file
     echo "$theme" > "$THEME_FILE"
