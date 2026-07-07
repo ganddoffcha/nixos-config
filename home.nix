@@ -163,6 +163,22 @@
     };
   };
 
+  # ── Google Sans fonts (installed to ~/.local/share/fonts/) ─────────────
+  xdg.dataFile."fonts/Google-Sans/GoogleSans-Bold.ttf".source = ./dotfiles/fonts/Google-Sans/GoogleSans-Bold.ttf;
+  xdg.dataFile."fonts/Google-Sans/GoogleSans-BoldItalic.ttf".source = ./dotfiles/fonts/Google-Sans/GoogleSans-BoldItalic.ttf;
+  xdg.dataFile."fonts/Google-Sans/GoogleSans-Italic.ttf".source = ./dotfiles/fonts/Google-Sans/GoogleSans-Italic.ttf;
+  xdg.dataFile."fonts/Google-Sans/GoogleSans-Medium.ttf".source = ./dotfiles/fonts/Google-Sans/GoogleSans-Medium.ttf;
+  xdg.dataFile."fonts/Google-Sans/GoogleSans-MediumItalic.ttf".source = ./dotfiles/fonts/Google-Sans/GoogleSans-MediumItalic.ttf;
+  xdg.dataFile."fonts/Google-Sans/GoogleSans-Regular.ttf".source = ./dotfiles/fonts/Google-Sans/GoogleSans-Regular.ttf;
+  xdg.dataFile."fonts/Google-Sans-Mono/Google-Sans-Mono-Bold.ttf".source = ./dotfiles/fonts/Google-Sans-Mono/Google-Sans-Mono-Bold.ttf;
+  xdg.dataFile."fonts/Google-Sans-Mono/Google-Sans-Mono-Italic.ttf".source = ./dotfiles/fonts/Google-Sans-Mono/Google-Sans-Mono-Italic.ttf;
+  xdg.dataFile."fonts/Google-Sans-Mono/Google-Sans-Mono-Italic-Bold.ttf".source = ./dotfiles/fonts/Google-Sans-Mono/Google-Sans-Mono-Italic-Bold.ttf;
+  xdg.dataFile."fonts/Google-Sans-Mono/Google-Sans-Mono-Italic-Medium.ttf".source = ./dotfiles/fonts/Google-Sans-Mono/Google-Sans-Mono-Italic-Medium.ttf;
+  xdg.dataFile."fonts/Google-Sans-Mono/Google-Sans-Mono-Italic-SemiBold.ttf".source = ./dotfiles/fonts/Google-Sans-Mono/Google-Sans-Mono-Italic-SemiBold.ttf;
+  xdg.dataFile."fonts/Google-Sans-Mono/Google-Sans-Mono-Medium.ttf".source = ./dotfiles/fonts/Google-Sans-Mono/Google-Sans-Mono-Medium.ttf;
+  xdg.dataFile."fonts/Google-Sans-Mono/Google-Sans-Mono-Regular.ttf".source = ./dotfiles/fonts/Google-Sans-Mono/Google-Sans-Mono-Regular.ttf;
+  xdg.dataFile."fonts/Google-Sans-Mono/Google-Sans-Mono-SemiBold.ttf".source = ./dotfiles/fonts/Google-Sans-Mono/Google-Sans-Mono-SemiBold.ttf;
+
   # ═══════════════════════════════════════════════════════════════════════
   # GIT
   # ═══════════════════════════════════════════════════════════════════════
@@ -344,6 +360,7 @@
 
   # ── Terminal ──────────────────────────────────────────────────────────
   xdg.configFile."ghostty/config".source = ./dotfiles/ghostty/config;
+  xdg.configFile."kitty/kitty.conf".source = ./dotfiles/kitty/kitty.conf;
 
   # ── LaTeX ─────────────────────────────────────────────────────────────
   xdg.configFile."latexmk/latexmkrc".source = ./dotfiles/latexmk/latexmkrc;
@@ -376,6 +393,7 @@
   xdg.configFile."qutebrowser/config.py".source = ./dotfiles/qutebrowser/config.py;
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
+  xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
   # ═══════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT — auto-switch compositor settings on AC state change
   # ═══════════════════════════════════════════════════════════════════════
