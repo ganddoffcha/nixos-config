@@ -119,7 +119,6 @@
     gh
     python3
     elan
-    tree-sitter
     openssl
     nss
     nssTools

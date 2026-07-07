@@ -159,6 +159,8 @@ return {
         ensure_installed = {
           "latex", "markdown", "markdown_inline",
           "bash", "lua", "vim",
+          "python", "json", "yaml", "toml",
+          "gitcommit", "git_rebase", "diff",
         },
         highlight = { enable = true },
         indent = { enable = true },
