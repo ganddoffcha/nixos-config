@@ -14,10 +14,6 @@ rules = [
 	{ mime = "application/zip", fg = "{{base0A}}" },
 	{ mime = "application/gzip", fg = "{{base0A}}" },
 	{ mime = "application/x-tar", fg = "{{base0A}}" },
-	{ name = "*.md", fg = "{{base0D}}" },
-	{ name = "*.nix", fg = "{{base0D}}" },
-	{ name = "*.lua", fg = "{{base0D}}" },
-	{ name = "*.py", fg = "{{base0D}}" },
 ]
 
 [syntect_theme]
