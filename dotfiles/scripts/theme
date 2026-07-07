@@ -1,118 +1,197 @@
 #!/usr/bin/env bash
-# Theme switcher for Stylix base16 themes.
-# Usage:
+# Theme switcher — instant runtime color application.
 #   theme                  show current theme
 #   theme -l               list all available themes
 #   theme -p <name>        preview theme colours in terminal
 #   theme -P               interactive bemenu picker (preview + apply)
-#   theme <name>           switch to named theme and rebuild
+#   theme <name>           switch to named theme instantly (no rebuild)
+#
+# Architecture:
+#   Declarative: base16-schemes package (the list of available themes)
+#   Imperative:   dotfiles/current-theme (active theme, runtime)
+#   Templates:    dotfiles/*/{config files} with {{base00}}…{{base0F}} placeholders
+#   Generated:    ~/.config/*/{config files} written at theme-switch time
 
 set -eu
 
 THEME_FILE="$HOME/dotfiles/current-theme"
 CACHE_FILE="$HOME/.cache/base16-themes-path"
 
-# Read the base16-schemes directory from the cache (written by home-manager
-# activation).  Falls back to a slow find if the cache is missing.
+# ── Resolve base16-schemes directory ──────────────────────────────────────
 if [ -f "$CACHE_FILE" ]; then
-    BASE16_DIR="$(cat "$CACHE_FILE")"
+    BASE16_DIR=$(cat "$CACHE_FILE")
 else
-    BASE16_DIR="$(find /nix/store/ -maxdepth 6 -name everforest.yaml -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null)"
+    BASE16_DIR=$(find /nix/store/ -maxdepth 6 -name 'everforest.yaml' -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null) || true
 fi
-[ -n "$BASE16_DIR" ] && [ -d "$BASE16_DIR" ] || die "Cannot find base16-schemes. Try rebuilding."
 
-list_themes() {
-    ls "$BASE16_DIR" | sed 's/\.yaml$//' | sort
-}
-
-current_theme() {
-    cat "$THEME_FILE" 2>/dev/null || echo "unknown"
-}
-
-die() {
-    echo "$1" >&2
+if [ -z "${BASE16_DIR:-}" ] || [ ! -d "$BASE16_DIR" ]; then
+    echo "error: cannot find base16-schemes directory. Is base16-schemes installed?" >&2
     exit 1
+fi
+
+# ── Parse a base16 YAML into shell variables base00..base0F ───────────────
+parse_yaml() {
+    local yaml="$1"
+    python3 -c "
+import sys, re
+with open('$yaml') as f:
+    text = f.read()
+for i in range(16):
+    key = f'base{i:02x}'
+    m = re.search(rf'^{key}:\s*[\"']?([0-9a-fA-F]{{6}})', text, re.MULTILINE)
+    if m:
+        print(m.group(1))
+    else:
+        print('ffffff')
+" 2>/dev/null
 }
 
-# Print a colour swatch block (24-bit true colour terminal)
-swatch() {
-    hex="${1#\#}"  # strip leading # if present
-    label="${2:-}"
-    r=$((0x${hex:0:2}))
-    g=$((0x${hex:2:2}))
-    b=$((0x${hex:4:2}))
-    printf '\033[48;2;%d;%d;%dm   \033[0m #%s  \033[38;2;%d;%d;%dm%s\033[0m\n' \
-        "$r" "$g" "$b" "$hex" "$r" "$g" "$b" "$label"
+# ── Substitute {{base00}}…{{base0F}} and {{xbase00}}…{{xbase0F}} ────────
+# Reads template from stdin, writes to stdout.
+substitute() {
+    local -a c=("$@")  # c[0]=base00, c[1]=base01, ... c[15]=base0F
+    local content
+    content=$(cat)
+    for i in $(seq 0 15); do
+        local hex="${c[$i]}"
+        local key
+        key=$(printf 'base%02x' "$i")
+        content="${content//"{{${key}}}"/#${hex}}"
+        content="${content//"{{x${key}}}"/${hex}}"
+    done
+    echo "$content"
 }
 
+# ── Apply a theme — parse YAML, write configs, reload services ────────────
+apply_theme() {
+    local theme="$1"
+    local yaml="$BASE16_DIR/$theme.yaml"
+
+    if [ ! -f "$yaml" ]; then
+        echo "error: theme '$theme' not found at $yaml" >&2
+        return 1
+    fi
+
+    # Parse colours
+    local -a colors
+    while IFS= read -r hex; do
+        colors+=("$hex")
+    done < <(parse_yaml "$yaml")
+
+    if [ ${#colors[@]} -ne 16 ]; then
+        echo "error: failed to parse 16 colours from $yaml (got ${#colors[@]})" >&2
+        return 1
+    fi
+
+    echo "Applying $theme..."
+
+    # Hyprland
+    < "$HOME/dotfiles/hypr/hyprland.conf" substitute "${colors[@]}" > "$HOME/.config/hypr/hyprland.conf"
+    # Mako
+    < "$HOME/dotfiles/mako/config" substitute "${colors[@]}" > "$HOME/.config/mako/config"
+    # Waybar
+    < "$HOME/dotfiles/waybar/style.css" substitute "${colors[@]}" > "$HOME/.config/waybar/style.css"
+    # Ghostty
+    < "$HOME/dotfiles/ghostty/config" substitute "${colors[@]}" > "$HOME/.config/ghostty/config"
+    # Kitty
+    < "$HOME/dotfiles/kitty/kitty.conf" substitute "${colors[@]}" > "$HOME/.config/kitty/kitty.conf"
+    # Neovim
+    < "$HOME/dotfiles/nvim/colors/base16-stylix.vim" substitute "${colors[@]}" > "$HOME/.config/nvim/colors/base16-stylix.vim"
+    # Yazi
+    < "$HOME/dotfiles/yazi/theme.toml" substitute "${colors[@]}" > "$HOME/.config/yazi/theme.toml"
+
+    # ── Reload services ──────────────────────────────────────────────────
+    hyprctl reload 2>/dev/null || true
+    systemctl --user restart waybar.service 2>/dev/null || true
+    systemctl --user restart hyprpaper.service 2>/dev/null || true
+    makoctl reload 2>/dev/null || true
+    pkill -SIGUSR1 kitty 2>/dev/null || true   # kitty live-reload colours
+
+    # Write the theme name to the imperative file
+    echo "$theme" > "$THEME_FILE"
+
+    echo "Theme '$theme' applied. GTK/Starship will follow on next nixos-rebuild."
+}
+
+# ── Preview a theme in the terminal (ANSI colour swatches) ────────────────
 preview_theme() {
-    theme="${1:?}"
-    f="$BASE16_DIR/$theme.yaml"
-    [ -f "$f" ] || die "Unknown theme: $theme"
+    local theme="$1"
+    local yaml="$BASE16_DIR/$theme.yaml"
+
+    if [ ! -f "$yaml" ]; then
+        echo "error: theme '$theme' not found" >&2
+        return 1
+    fi
+
+    local -a colors
+    while IFS= read -r hex; do
+        colors+=("$hex")
+    done < <(parse_yaml "$yaml")
 
     echo "Theme: $theme"
     echo "─────────────────────────────"
-    for key in base00 base01 base02 base03 base04 base05 base06 base07 \
-               base08 base09 base0A base0B base0C base0D base0E base0F; do
-        hex=$(grep "^\s*$key:" "$f" | head -1 | sed 's/.*"\([^"]*\)".*/\1/;s/.*:\s*\(\S\+\).*/\1/')
-        [ -n "$hex" ] && swatch "$hex" "$key" || echo "  $key: (not defined)"
+    for i in $(seq 0 15); do
+        local key label
+        key=$(printf 'base%02x' "$i")
+        case "$i" in
+            0) label="bg        ";;
+            1) label="alt-bg    ";;
+            2) label="selection ";;
+            3) label="comment   ";;
+            4) label="subtle    ";;
+            5) label="fg        ";;
+            6) label="light-fg  ";;
+            7) label="brightest ";;
+            8) label="red       ";;
+            9) label="orange    ";;
+            10) label="yellow    ";;
+            11) label="green     ";;
+            12) label="cyan      ";;
+            13) label="blue      ";;
+            14) label="purple    ";;
+            15) label="brown     ";;
+        esac
+        printf "\033[48;2;%d;%d;%dm   \033[0m #%s  \033[38;2;%d;%d;%dm%s\033[0m\n" \
+            "0x${colors[$i]:0:2}" "0x${colors[$i]:2:2}" "0x${colors[$i]:4:2}" \
+            "${colors[$i]}" \
+            "0x${colors[$i]:0:2}" "0x${colors[$i]:2:2}" "0x${colors[$i]:4:2}" \
+            "$key"
     done
     echo "─────────────────────────────"
-    variant=$(grep 'variant:' "$f" | head -1 | sed 's/.*"\([^"]*\)".*/\1/;s/.*:\s*\(\S\+\).*/\1/')
-    [ -n "$variant" ] && echo "Variant: $variant"
+
+    # Detect variant from scheme field
+    local variant
+    variant=$(rg -N 'scheme:\s*"?(.+?)"?' "$yaml" -r '$1' 2>/dev/null | head -1 || true)
+    [ -n "$variant" ] && echo "Scheme: $variant"
 }
 
-bemenu_picker() {
-    if command -v bemenu >/dev/null 2>&1; then
-        choice=$(list_themes | bemenu -l 20 -p "Theme:")
-    elif command -v fzf >/dev/null 2>&1; then
-        choice=$(list_themes | fzf --height=20 --prompt="Theme: ")
-    else
-        die "Neither bemenu nor fzf found"
-    fi
-    [ -n "$choice" ] || exit 0
-    echo "$choice"
+# ── List all available themes ─────────────────────────────────────────────
+list_themes() {
+    find "$BASE16_DIR" -name '*.yaml' -type f 2>/dev/null | sed 's|.*/||; s|\.yaml$||' | sort
 }
 
+# ── Main ──────────────────────────────────────────────────────────────────
 case "${1:-}" in
-    ""|-c|--current)
-        current_theme
-        ;;
     -l|--list)
         list_themes
         ;;
     -p|--preview)
-        shift
-        preview_theme "${1:-$(current_theme)}"
+        if [ -z "${2:-}" ]; then
+            echo "usage: theme -p <name>" >&2
+            exit 1
+        fi
+        preview_theme "$2"
         ;;
     -P|--picker)
-        choice=$(bemenu_picker)
-        echo "Selected: $choice"
-        echo "Preview:"
-        preview_theme "$choice"
-        echo ""
-        printf "Apply? [y/N] "
-        read -r answer
-        case "$answer" in
-            [yY]*) ;;
-            *) echo "Cancelled."; exit 0 ;;
-        esac
-        echo "$choice" > "$THEME_FILE"
-        echo "Switched to theme: $choice"
-        echo "Rebuilding..."
-        exec "$HOME/scripts/rebuild" -m "theme: switch to $choice"
+        choice=$(list_themes | bemenu -l 20 -p "Theme:" 2>/dev/null || true)
+        if [ -n "$choice" ]; then
+            apply_theme "$choice"
+        fi
+        ;;
+    "")
+        cat "$THEME_FILE" 2>/dev/null || echo "unknown"
         ;;
     *)
-        theme="$1"
-        [ -f "$BASE16_DIR/$theme.yaml" ] || {
-            echo "Unknown theme: $theme" >&2
-            echo "Available themes:" >&2
-            list_themes >&2
-            exit 1
-        }
-        echo "$theme" > "$THEME_FILE"
-        echo "Switched to theme: $theme"
-        echo "Rebuilding..."
-        exec "$HOME/scripts/rebuild" -m "theme: switch to $theme"
+        apply_theme "$1"
         ;;
 esac

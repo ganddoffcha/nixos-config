@@ -1,33 +1,10 @@
 { config, lib, pkgs, ... }:
 
 let
-  # Stylix colour palette → used to substitute placeholders in config
-  # templates.  Change dotfiles/current-theme and rebuild to switch
-  # themes everywhere automatically.
-  #
-  # {{base00}}…{{base0F}}  →  with # prefix (CSS, kitty, bemenu, etc.)
-  # {{xbase00}}…{{xbase0F}} →  raw hex, no # (hyprland rgba/rgb)
+  # Stylix colour palette — used for BEMENU_OPTS and home-manager activation.
+  # Note: app config colours are now handled imperatively at runtime by
+  # ~/scripts/theme for instant switching without nixos-rebuild.
   palette = config.lib.stylix.colors.withHashtag;
-  stripHash = c: lib.removePrefix "#" c;
-  subst = str:
-    builtins.replaceStrings
-      [ "{{base00}}" "{{base01}}" "{{base02}}" "{{base03}}"
-        "{{base04}}" "{{base05}}" "{{base06}}" "{{base07}}"
-        "{{base08}}" "{{base09}}" "{{base0A}}" "{{base0B}}"
-        "{{base0C}}" "{{base0D}}" "{{base0E}}" "{{base0F}}"
-        "{{xbase00}}" "{{xbase01}}" "{{xbase02}}" "{{xbase03}}"
-        "{{xbase04}}" "{{xbase05}}" "{{xbase06}}" "{{xbase07}}"
-        "{{xbase08}}" "{{xbase09}}" "{{xbase0A}}" "{{xbase0B}}"
-        "{{xbase0C}}" "{{xbase0D}}" "{{xbase0E}}" "{{xbase0F}}" ]
-      [ palette.base00 palette.base01 palette.base02 palette.base03
-        palette.base04 palette.base05 palette.base06 palette.base07
-        palette.base08 palette.base09 palette.base0A palette.base0B
-        palette.base0C palette.base0D palette.base0E palette.base0F
-        (stripHash palette.base00) (stripHash palette.base01) (stripHash palette.base02) (stripHash palette.base03)
-        (stripHash palette.base04) (stripHash palette.base05) (stripHash palette.base06) (stripHash palette.base07)
-        (stripHash palette.base08) (stripHash palette.base09) (stripHash palette.base0A) (stripHash palette.base0B)
-        (stripHash palette.base0C) (stripHash palette.base0D) (stripHash palette.base0E) (stripHash palette.base0F) ]
-      str;
 in {
   # Allow unfree packages (vscode, spotify, etc.)
   nixpkgs.config.allowUnfree = true;
@@ -388,9 +365,13 @@ in {
   # ═══════════════════════════════════════════════════════════════════════
   # Each entry symlinks a file from ./dotfiles/ into ~/.config/ or ~/.
   # On a new machine, just clone the dotfiles repo and rebuild.
+  #
+  # Config files with {{base00}}…{{base0F}} placeholders are NOT managed
+  # by home-manager — they're generated at runtime by ~/scripts/theme
+  # for instant theme switching without nixos-rebuild.
 
   # ── Hyprland ──────────────────────────────────────────────────────────
-  xdg.configFile."hypr/hyprland.conf".text = subst (builtins.readFile ./dotfiles/hypr/hyprland.conf);
+  # hyprland.conf — themed at runtime by ~/scripts/theme (imperative colours)
   xdg.configFile."hypr/hypridle.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
@@ -430,15 +411,15 @@ in {
   xdg.configFile."hypr/hyprpaper.conf".source = ./dotfiles/hypr/hyprpaper.conf;
 
   # ── Notifications ─────────────────────────────────────────────────────
-  xdg.configFile."mako/config".text = subst (builtins.readFile ./dotfiles/mako/config);
+  # mako/config — themed at runtime by ~/scripts/theme (imperative colours)
 
   # ── Waybar ────────────────────────────────────────────────────────────
   xdg.configFile."waybar/config.jsonc".source = ./dotfiles/waybar/config.jsonc;
-  xdg.configFile."waybar/style.css".text = subst (builtins.readFile ./dotfiles/waybar/style.css);
+  # waybar/style.css — themed at runtime by ~/scripts/theme (imperative colours)
 
   # ── Terminal ──────────────────────────────────────────────────────────
-  xdg.configFile."ghostty/config".text = subst (builtins.readFile ./dotfiles/ghostty/config);
-  xdg.configFile."kitty/kitty.conf".text = subst (builtins.readFile ./dotfiles/kitty/kitty.conf);
+  # ghostty/config — themed at runtime by ~/scripts/theme (imperative colours)
+  # kitty/kitty.conf — themed at runtime by ~/scripts/theme (imperative colours)
 
   # ── LaTeX ─────────────────────────────────────────────────────────────
   xdg.configFile."latexmk/latexmkrc".source = ./dotfiles/latexmk/latexmkrc;
@@ -476,10 +457,10 @@ in {
   xdg.configFile."nvim/lua/user/keymaps.lua".source = ./dotfiles/nvim/lua/user/keymaps.lua;
   xdg.configFile."nvim/lua/user/autocmds.lua".source = ./dotfiles/nvim/lua/user/autocmds.lua;
   xdg.configFile."nvim/lua/user/plugins.lua".source = ./dotfiles/nvim/lua/user/plugins.lua;
-  xdg.configFile."nvim/colors/base16-stylix.vim".text = subst (builtins.readFile ./dotfiles/nvim/colors/base16-stylix.vim);
+  # nvim/colors/base16-stylix.vim — themed at runtime by ~/scripts/theme (imperative colours)
   xdg.configFile."qutebrowser/config.py".source = ./dotfiles/qutebrowser/config.py;
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
-  xdg.configFile."yazi/theme.toml".text = subst (builtins.readFile ./dotfiles/yazi/theme.toml);
+  # yazi/theme.toml — themed at runtime by ~/scripts/theme (imperative colours)
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
 
@@ -627,6 +608,67 @@ in {
     cacheBase16Path = ''
       mkdir -p "$HOME/.cache"
       echo "${pkgs.base16-schemes}/share/themes" > "$HOME/.cache/base16-themes-path"
+    '';
+    # Generate themed configs on activation (first install / rebuild).
+    # Inline logic avoids chicken-and-egg: ~/scripts/theme symlink isn't
+    # updated yet during activation, so we can't call it directly.
+    generateThemedConfigs = ''
+      THEME_FILE="$HOME/dotfiles/current-theme"
+      THEME=$(${pkgs.coreutils}/bin/cat "$THEME_FILE" 2>/dev/null || echo "google-dark")
+      YAML="${pkgs.base16-schemes}/share/themes/$THEME.yaml"
+      if [ ! -f "$YAML" ]; then
+        echo "theme: '$THEME' not found, skipping config generation" >&2
+        exit 0
+      fi
+      # Parse base16 YAML → 16 hex colours
+      ${pkgs.python3}/bin/python3 -c '
+import sys, re
+with open("'"$YAML"'") as f:
+    text = f.read()
+for i in range(16):
+    m = re.search(r"^base%02x:\s*\"?([0-9a-fA-F]{6})\"?" % i, text, re.MULTILINE)
+    print(m.group(1) if m else "ffffff")
+' > /tmp/theme-colors.txt
+      # Read colours into array
+      colors=()
+      while IFS= read -r hex; do colors+=("$hex"); done < /tmp/theme-colors.txt
+      rm -f /tmp/theme-colors.txt
+      if [ ''${#colors[@]} -ne 16 ]; then
+        echo "theme: failed to parse colours from $YAML" >&2
+        exit 0
+      fi
+      # Substitute and write configs
+      sub() {
+        local c="$1"
+        for i in $(seq 0 15); do
+          local hex="''${colors[$i]}"
+          local key; key=$(printf 'base%02x' "$i")
+          c="''${c//"{{$key}}"/#''${hex}}"
+          c="''${c//"{{x$key}}"/''${hex}}"
+        done
+        echo "$c"
+      }
+      write_config() {
+        local src="$1" dst="$2"
+        mkdir -p "$(dirname "$dst")"
+        sub "$(${pkgs.coreutils}/bin/cat "$src")" > "$dst"
+      }
+      # Remove old Nix store symlinks first (they're read-only)
+      rm -f "$HOME/.config/hypr/hyprland.conf"
+      rm -f "$HOME/.config/mako/config"
+      rm -f "$HOME/.config/waybar/style.css"
+      rm -f "$HOME/.config/ghostty/config"
+      rm -f "$HOME/.config/kitty/kitty.conf"
+      rm -f "$HOME/.config/nvim/colors/base16-stylix.vim"
+      rm -f "$HOME/.config/yazi/theme.toml"
+      write_config "$HOME/dotfiles/hypr/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
+      write_config "$HOME/dotfiles/mako/config" "$HOME/.config/mako/config"
+      write_config "$HOME/dotfiles/waybar/style.css" "$HOME/.config/waybar/style.css"
+      write_config "$HOME/dotfiles/ghostty/config" "$HOME/.config/ghostty/config"
+      write_config "$HOME/dotfiles/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+      write_config "$HOME/dotfiles/nvim/colors/base16-stylix.vim" "$HOME/.config/nvim/colors/base16-stylix.vim"
+      write_config "$HOME/dotfiles/yazi/theme.toml" "$HOME/.config/yazi/theme.toml"
+      echo "theme: generated configs for '$THEME'"
     '';
   };
 
