@@ -1,5 +1,30 @@
 return {
   -- ═══════════════════════════════════════════════════════════════════════
+  -- Theme
+  -- ═══════════════════════════════════════════════════════════════════════
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    priority = 1000,
+    config = function()
+      require("catppuccin").setup({
+        flavour = "mocha",
+        transparent_background = true,
+        integrations = {
+          treesitter = true,
+          native_lsp = { enabled = true },
+          lsp_trouble = false,
+          cmp = true,
+          gitsigns = true,
+          telescope = true,
+          which_key = true,
+        },
+      })
+      vim.cmd.colorscheme("catppuccin")
+    end,
+  },
+
+  -- ═══════════════════════════════════════════════════════════════════════
   -- Core utilities
   -- ═══════════════════════════════════════════════════════════════════════
   { "tpope/vim-surround" },
