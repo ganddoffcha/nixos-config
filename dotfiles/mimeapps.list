@@ -1,17 +1,41 @@
 [Default Applications]
+# ── Text → custom ghostty -e nvim wrapper (Terminal=true not respected) ──
 text/plain=text.desktop
 text/x-shellscript=text.desktop
 text/markdown=text.desktop
 text/x-makefile=text.desktop
 text/x-csrc=text.desktop
 text/x-python=text.desktop
-application/pdf=pdf.desktop
-application/postscript=pdf.desktop
-image/png=img.desktop
-image/jpeg=img.desktop
-image/gif=img.desktop
-image/svg+xml=img.desktop
-image/webp=img.desktop
+
+# ── PDF + EPUB + comics → zathura with mupdf backend (package) ──
+application/pdf=org.pwmt.zathura-pdf-mupdf.desktop
+application/postscript=org.pwmt.zathura-pdf-mupdf.desktop
+application/epub+zip=org.pwmt.zathura-pdf-mupdf.desktop
+application/x-fictionbook=org.pwmt.zathura-pdf-mupdf.desktop
+application/x-mobipocket-ebook=org.pwmt.zathura-pdf-mupdf.desktop
+
+# ── Images → imv (package, %F multi-file, 15 MIME types) ──
+image/png=imv.desktop
+image/jpeg=imv.desktop
+image/gif=imv.desktop
+image/svg+xml=imv.desktop
+image/webp=imv.desktop
+image/bmp=imv.desktop
+image/tiff=imv.desktop
+image/heif=imv.desktop
+image/avif=imv.desktop
+image/jxl=imv.desktop
+
+# ── Archives → custom ghostty -e yazi wrapper (yazi browses archives) ──
+application/zip=file.desktop
+application/x-tar=file.desktop
+application/gzip=file.desktop
+application/x-xz=file.desktop
+application/x-7z-compressed=file.desktop
+application/x-rar=file.desktop
+application/x-bzip2=file.desktop
+
+# ── Video / Audio → mpv (package, gold standard) ──
 video/mp4=mpv.desktop
 video/x-matroska=mpv.desktop
 video/webm=mpv.desktop
@@ -19,7 +43,11 @@ video/x-msvideo=mpv.desktop
 audio/mpeg=mpv.desktop
 audio/flac=mpv.desktop
 audio/ogg=mpv.desktop
+
+# ── Directories → custom ghostty -e yazi wrapper ──
 inode/directory=file.desktop
+
+# ── Web / protocols ──
 x-scheme-handler/mailto=brave-browser.desktop
 x-scheme-handler/webcal=brave-browser.desktop
 x-scheme-handler/tg=org.telegram.desktop.desktop

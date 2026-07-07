@@ -453,28 +453,18 @@
 
   # ── Default application handlers — generated from Nix, no raw files ────
   xdg.desktopEntries = {
-    img = {
-      name = "Image viewer";
-      exec = "imv %f";
-      mimeType = [ "image/png" "image/jpeg" "image/gif" "image/svg+xml" "image/webp" ];
-      noDisplay = true;
-    };
-    pdf = {
-      name = "PDF reader";
-      exec = "zathura %u";
-      mimeType = [ "application/pdf" "application/postscript" ];
-      noDisplay = true;
-    };
+    # ── Terminal-based handlers (ghostty wrapper needed because
+    # NixOS xdg-open does not respect Terminal=true in .desktop files) ────
     text = {
       name = "Text editor";
-      exec = "ghostty -e nvim %f";
+      exec = "ghostty -e nvim %F";
       mimeType = [ "text/plain" "text/x-shellscript" "text/markdown" "text/x-makefile" "text/x-csrc" "text/x-python" ];
       noDisplay = true;
     };
     file = {
       name = "File manager";
-      exec = "ghostty -e yazi %f";
-      mimeType = [ "inode/directory" ];
+      exec = "ghostty -e yazi %F";
+      mimeType = [ "inode/directory" "application/zip" "application/x-tar" "application/gzip" "application/x-xz" "application/x-7z-compressed" "application/x-rar" "application/x-bzip2" ];
       noDisplay = true;
     };
     "ckan-handler" = {
@@ -484,6 +474,8 @@
       noDisplay = true;
     };
   };
+  # Images use package imv.desktop (%F, 15 MIME types)
+  # PDF/EPUB/comics use package org.pwmt.zathura-pdf-mupdf.desktop
 
   # ═══════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT — auto-switch compositor settings on AC state change
