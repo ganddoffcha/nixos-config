@@ -23,12 +23,10 @@
     vscode
 
     # ── Browsers ────────────────────────────────────────────────────────
-    chromium
     brave
     qutebrowser
 
     # ── Terminals ───────────────────────────────────────────────────────
-    alacritty
     kitty
     ghostty
 
@@ -45,6 +43,7 @@
     eza
     bat
     ripgrep
+    jq
     dust
     delta
     bottom
@@ -107,7 +106,6 @@
     # ── Documents ───────────────────────────────────────────────────────
     texlive.combined.scheme-full
     zathura
-    kdePackages.okular
     libreoffice-qt6-fresh
 
     # ── Music ───────────────────────────────────────────────────────────
@@ -123,7 +121,6 @@
     gh
     python3
     elan
-    emacs
     tree-sitter
     openssl
     nss
