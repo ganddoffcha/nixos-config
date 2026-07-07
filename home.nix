@@ -659,7 +659,6 @@ for i in range(16):
       atomic_write() {
         local src="$1" dst="$2"
         mkdir -p "$(dirname "$dst")"
-        rm -f "$dst" "$dst.tmp"
         sub "$(${pkgs.coreutils}/bin/cat "$src")" > "$dst.tmp"
         mv "$dst.tmp" "$dst"
       }
