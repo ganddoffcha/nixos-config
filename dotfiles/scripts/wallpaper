@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# Wallpaper + Theme matcher — extracts dominant colours from an image
+# and finds the closest base16 theme.
+#
+#   wallpaper                         list available wallpapers
+#   wallpaper -p <image>             preview wallpaper dominant colours
+#   wallpaper -m <image>             show best-matching themes (ranked)
+#   wallpaper <image>                set wallpaper + auto-match theme
+#   wallpaper <image> <theme>        set wallpaper + specific theme
+#
+# Wallpapers live in ~/dotfiles/wallpapers/
+
+set -e
+
+WALLPAPER_DIR="$HOME/dotfiles/wallpapers"
+THEME_SCRIPT="$HOME/dotfiles/scripts/theme"
+HYPRPAPER_CONF="$HOME/.config/hypr/hyprpaper.conf"
+
+# Resolve base16 directory (same logic as theme script)
+CACHE_FILE="$HOME/.cache/base16-themes-path"
+if [ -f "$CACHE_FILE" ]; then
+    BASE16_DIR=$(cat "$CACHE_FILE")
+else
+    BASE16_DIR=$(find /nix/store/ -maxdepth 6 -name 'everforest.yaml' -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null) || true
+fi
+
+# ── Extract top N dominant colours from an image ────────────────────────
+# Uses ImageMagick to resize, quantize, and output a colour histogram.
+extract_colors() {
+    local image="$1" n="${2:-5}"
+    local img="$WALLPAPER_DIR/$image"
+    [ -f "$img" ] || img="$image"
+    magick "$img" -resize 200x200 -colors 16 -quantize RGB \
+        -format "%c" histogram:info:- 2>/dev/null |
+        sort -rn | head -n "$n" |
+        sed -n 's/.*#\([0-9A-Fa-f]\{6,12\}\).*/\1/p' |
+        while read -r hex; do
+            echo "${hex:0:6}"  # first 6 hex chars (RGB)
+        done
+}
+
+# ── Parse a base16 YAML into an array of 16 hex colours ─────────────────
+parse_theme() {
+    local theme="$1"
+    local yaml="$BASE16_DIR/$theme.yaml"
+    python3 -c "
+import sys, re
+with open('$yaml') as f:
+    text = f.read()
+for i in range(16):
+    m = re.search(r'(?i)^\s*base%02x:\s*\"?#?([0-9a-fA-F]{6})\"?' % i, text, re.MULTILINE)
+    print(m.group(1) if m else 'ffffff')
+" 2>/dev/null
+}
+
+# ── Colour distance (Euclidean in RGB space, weighted) ──────────────────
+color_dist() {
+    local r1=$((16#${1:0:2})) g1=$((16#${1:2:2})) b1=$((16#${1:4:2}))
+    local r2=$((16#${2:0:2})) g2=$((16#${2:2:2})) b2=$((16#${2:4:2}))
+    # Weighted: red/blue matter more than green to human perception
+    local dr=$(( (r1 - r2) * 3 )) dg=$(( (g1 - g2) * 4 )) db=$(( (b1 - b2) * 2 ))
+    echo $(( dr*dr + dg*dg + db*db ))
+}
+
+# ── Score a theme against the extracted colours ─────────────────────────
+score_theme() {
+    local theme="$1" image="$2"
+    local -a theme_colors wallpaper_colors
+    while IFS= read -r hex; do theme_colors+=("$hex"); done < <(parse_theme "$theme")
+    while IFS= read -r hex; do wallpaper_colors+=("$hex"); done < <(extract_colors "$image" 5)
+    
+    local total=0
+    for wc in "${wallpaper_colors[@]}"; do
+        local best=99999999
+        for tc in "${theme_colors[@]}"; do
+            local d; d=$(color_dist "$wc" "$tc")
+            [ "$d" -lt "$best" ] && best=$d
+        done
+        total=$(( total + best ))
+    done
+    echo "$total"
+}
+
+# ── Set wallpaper via hyprpaper ─────────────────────────────────────────
+set_wallpaper() {
+    local image="$1"
+    local path="$WALLPAPER_DIR/$image"
+    [ -f "$path" ] || { echo "Wallpaper not found: $path" >&2; return 1; }
+    
+    # Update hyprpaper config
+    mkdir -p "$(dirname "$HYPRPAPER_CONF")"
+    cat > "$HYPRPAPER_CONF" <<EOF
+preload = $path
+wallpaper = ,$path
+EOF
+    
+    # Reload hyprpaper
+    systemctl --user restart hyprpaper.service 2>/dev/null || true
+    echo "Wallpaper: $image"
+}
+
+# ── Find best matching theme ────────────────────────────────────────────
+best_theme() {
+    local image="$1"
+    local best_score=99999999 best_name=""
+    local curated_file="$HOME/dotfiles/curated-themes"
+    
+    while read -r theme; do
+        [ -z "$theme" ] && continue
+        local score; score=$(score_theme "$theme" "$image")
+        echo "  $theme: $score" >&2
+        if [ "$score" -lt "$best_score" ]; then
+            best_score=$score
+            best_name=$theme
+        fi
+    done < "$curated_file"
+    
+    echo "$best_name"
+}
+
+# ── List available wallpapers ───────────────────────────────────────────
+list_wallpapers() {
+    find "$WALLPAPER_DIR" -type f \( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' \) \
+        2>/dev/null | sed 's|.*/||' | sort
+}
+
+# ── Preview wallpaper colours ───────────────────────────────────────────
+preview_wallpaper() {
+    local image="$1"
+    local path="$WALLPAPER_DIR/$image"
+    [ -f "$path" ] || { echo "Not found: $path" >&2; return 1; }
+    
+    echo "Wallpaper: $image"
+    echo "─────────────────────────────"
+    extract_colors "$path" 8 | while read -r hex; do
+        printf "\033[48;2;%d;%d;%dm     \033[0m #%s\n" \
+            "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}" "$hex"
+    done
+    echo "─────────────────────────────"
+}
+
+# ── Main ─────────────────────────────────────────────────────────────────
+case "${1:-}" in
+    -l|--list)
+        list_wallpapers
+        ;;
+    -p|--preview)
+        preview_wallpaper "${2:?usage: wallpaper -p <image>}"
+        ;;
+    -m|--match)
+        image="${2:?usage: wallpaper -m <image>}"
+        echo "Finding best theme for $image..." >&2
+        best_theme "$image"
+        ;;
+    "")
+        list_wallpapers
+        ;;
+    *)
+        image="$1"
+        theme="${2:-}"
+        # If no theme specified, auto-match
+        if [ -z "$theme" ]; then
+            echo "Auto-matching theme for $image..." >&2
+            theme=$(best_theme "$image")
+            echo "Best match: $theme" >&2
+        fi
+        set_wallpaper "$image"
+        "$THEME_SCRIPT" "$theme"
+        ;;
+esac

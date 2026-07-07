@@ -408,7 +408,7 @@ in {
     }
   '';
   xdg.configFile."hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;
-  xdg.configFile."hypr/hyprpaper.conf".source = ./dotfiles/hypr/hyprpaper.conf;
+  # hyprpaper.conf — managed at runtime by ~/scripts/wallpaper (wallpaper paths change)
 
   # ── Notifications ─────────────────────────────────────────────────────
   # mako/config — themed at runtime by ~/scripts/theme (imperative colours)
@@ -442,6 +442,10 @@ in {
   home.file."scripts/texnow".source = ./dotfiles/scripts/texnow;
   home.file."scripts/toggle_touchpad".source = ./dotfiles/scripts/toggle_touchpad;
   home.file."scripts/yazi_picker".source = ./dotfiles/scripts/yazi_picker;
+  home.file."scripts/wallpaper" = {
+    source = ./dotfiles/scripts/wallpaper;
+    executable = true;
+  };
   home.file."scripts/theme" = {
     source = ./dotfiles/scripts/theme;
     executable = true;
