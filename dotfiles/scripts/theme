@@ -1,8 +1,11 @@
 #!/bin/sh
-# Theme switcher — updates dotfiles/current-theme and rebuilds.
-# Usage: theme [name]           switch to named base16 theme
-#        theme -l               list available themes
-#        theme                  show current theme
+# Theme switcher for Stylix base16 themes.
+# Usage:
+#   theme                  show current theme
+#   theme -l               list all available themes
+#   theme -p <name>        preview theme colours in terminal
+#   theme -P               interactive bemenu picker (preview + apply)
+#   theme <name>           switch to named theme and rebuild
 
 set -eu
 
@@ -22,6 +25,50 @@ die() {
     exit 1
 }
 
+# Print a colour swatch block (24-bit true colour terminal)
+swatch() {
+    # $1 = hex colour (e.g. "1e1e2e"), $2 = label
+    hex="$1"
+    label="${2:-}"
+    r=$((0x${hex:0:2}))
+    g=$((0x${hex:2:2}))
+    b=$((0x${hex:4:2}))
+    printf '\033[48;2;%d;%d;%dm   \033[0m %s  \033[38;2;%d;%d;%dm%s\033[0m\n' \
+        "$r" "$g" "$b" "$hex" "$r" "$g" "$b" "$label"
+}
+
+preview_theme() {
+    theme="${1:?}"
+    f="$BASE16_DIR/$theme.yaml"
+    [ -f "$f" ] || die "Unknown theme: $theme"
+
+    echo "Theme: $theme"
+    echo "─────────────────────────────"
+    # Extract palette from YAML (simple grep, no YAML parser needed)
+    for key in base00 base01 base02 base03 base04 base05 base06 base07 \
+               base08 base09 base0A base0B base0C base0D base0E base0F; do
+        hex=$(grep "^\s*$key:" "$f" | head -1 | sed 's/.*"\([^"]*\)".*/\1/;s/.*:\s*\(\S\+\).*/\1/')
+        [ -n "$hex" ] && swatch "$hex" "$key" || echo "  $key: (not defined)"
+    done
+    echo "─────────────────────────────"
+    # Show variant (dark/light)
+    variant=$(grep 'variant:' "$f" | head -1 | sed 's/.*"\([^"]*\)".*/\1/;s/.*:\s*\(\S\+\).*/\1/')
+    [ -n "$variant" ] && echo "Variant: $variant"
+}
+
+bemenu_picker() {
+    # Check if bemenu is available
+    if command -v bemenu >/dev/null 2>&1; then
+        choice=$(list_themes | bemenu -l 20 -p "Theme:")
+    elif command -v fzf >/dev/null 2>&1; then
+        choice=$(list_themes | fzf --height=20 --prompt="Theme: ")
+    else
+        die "Neither bemenu nor fzf found"
+    fi
+    [ -n "$choice" ] || exit 0
+    echo "$choice"
+}
+
 case "${1:-}" in
     ""|-c|--current)
         current_theme
@@ -29,15 +76,35 @@ case "${1:-}" in
     -l|--list)
         list_themes
         ;;
+    -p|--preview)
+        shift
+        preview_theme "${1:-$(current_theme)}"
+        ;;
+    -P|--picker)
+        choice=$(bemenu_picker)
+        echo "Selected: $choice"
+        echo "Preview:"
+        preview_theme "$choice"
+        echo ""
+        printf "Apply? [y/N] "
+        read -r answer
+        case "$answer" in
+            [yY]*) ;;
+            *) echo "Cancelled."; exit 0 ;;
+        esac
+        echo "$choice" > "$THEME_FILE"
+        echo "Switched to theme: $choice"
+        echo "Rebuilding..."
+        exec "$HOME/scripts/rebuild" -m "theme: switch to $choice"
+        ;;
     *)
         theme="$1"
-        # Validate theme exists
-        if [ ! -f "$BASE16_DIR/$theme.yaml" ]; then
+        [ -f "$BASE16_DIR/$theme.yaml" ] || {
             echo "Unknown theme: $theme" >&2
             echo "Available themes:" >&2
             list_themes >&2
             exit 1
-        fi
+        }
         echo "$theme" > "$THEME_FILE"
         echo "Switched to theme: $theme"
         echo "Rebuilding..."

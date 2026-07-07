@@ -1,11 +1,11 @@
-# Everforest
-background-color=#2d353bcc
-border-color=#7fbbb3
-text-color=#d3c6aa
-progress-color=over #475258
+# Stylix dynamic — placeholders replaced by home.nix
+background-color={{base00}}cc
+border-color={{base0D}}
+text-color={{base05}}
+progress-color=over {{base02}}
 
 [urgency=low]
-border-color=#859289
+border-color={{base03}}
 
 [urgency=critical]
-border-color=#e67e80
+border-color={{base08}}

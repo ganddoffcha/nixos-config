@@ -1,5 +1,21 @@
+# Stylix dynamic — placeholders replaced by home.nix
 background-opacity = 0.67
-#font-family = "Shanggu Mono"
 font-size = 12
-theme = Catppuccin Mocha
-gtk-single-instance = true
+background = {{base00}}
+foreground = {{base05}}
+palette = 0={{base00}}
+palette = 1={{base08}}
+palette = 2={{base0B}}
+palette = 3={{base0A}}
+palette = 4={{base0D}}
+palette = 5={{base0E}}
+palette = 6={{base0C}}
+palette = 7={{base05}}
+palette = 8={{base03}}
+palette = 9={{base08}}
+palette = 10={{base0B}}
+palette = 11={{base0A}}
+palette = 12={{base0D}}
+palette = 13={{base0E}}
+palette = 14={{base0C}}
+palette = 15={{base07}}

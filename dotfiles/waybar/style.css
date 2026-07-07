@@ -1,19 +1,19 @@
-/* Everforest */
-@define-color base0 #2d353b;
-@define-color base1 #343f44;
-@define-color base2 #475258;
-@define-color base3 #859289;
-@define-color base4 #9da9a0;
-@define-color base5 #d3c6aa;
-@define-color base6 #e6e2cc;
-@define-color base7 #fdf6e3;
-@define-color red #e67e80;
-@define-color orange #e69875;
-@define-color yellow #dbbc7f;
-@define-color green #a7c080;
-@define-color cyan #83c092;
-@define-color blue #7fbbb3;
-@define-color purple #d699b6;
+/* Stylix dynamic — placeholders replaced by home.nix */
+@define-color base0 {{base00}};
+@define-color base1 {{base01}};
+@define-color base2 {{base02}};
+@define-color base3 {{base03}};
+@define-color base4 {{base04}};
+@define-color base5 {{base05}};
+@define-color base6 {{base06}};
+@define-color base7 {{base07}};
+@define-color red {{base08}};
+@define-color orange {{base09}};
+@define-color yellow {{base0A}};
+@define-color green {{base0B}};
+@define-color cyan {{base0C}};
+@define-color blue {{base0D}};
+@define-color purple {{base0E}};
 
 * {
     font-family: Google Sans;

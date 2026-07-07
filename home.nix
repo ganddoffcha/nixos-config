@@ -1,6 +1,22 @@
 { config, lib, pkgs, ... }:
 
-{
+let
+  # Stylix colour palette → used to substitute {{base00}}…{{base0F}}
+  # placeholders in config file templates.  Change dotfiles/current-theme
+  # and rebuild to switch themes everywhere automatically.
+  palette = config.lib.stylix.colors.withHashtag;
+  subst = str:
+    builtins.replaceStrings
+      [ "{{base00}}" "{{base01}}" "{{base02}}" "{{base03}}"
+        "{{base04}}" "{{base05}}" "{{base06}}" "{{base07}}"
+        "{{base08}}" "{{base09}}" "{{base0A}}" "{{base0B}}"
+        "{{base0C}}" "{{base0D}}" "{{base0E}}" "{{base0F}}" ]
+      [ palette.base00 palette.base01 palette.base02 palette.base03
+        palette.base04 palette.base05 palette.base06 palette.base07
+        palette.base08 palette.base09 palette.base0A palette.base0B
+        palette.base0C palette.base0D palette.base0E palette.base0F ]
+      str;
+in {
   # Allow unfree packages (vscode, spotify, etc.)
   nixpkgs.config.allowUnfree = true;
 
@@ -342,8 +358,8 @@
     TEXMFHOME = "${config.xdg.dataHome}/texmf";
     TEXMFVAR = "${config.xdg.cacheHome}/texlive/texmf-var";
     TEXMFCONFIG = "${config.xdg.configHome}/texlive/texmf-config";
-    # bemenu launcher colours (Everforest)
-    BEMENU_OPTS = "--tb=#343f44 --tf=#d3c6aa --fb=#343f44 --ff=#d3c6aa --nb=#343f44 --nf=#d3c6aa --hb=#859289 --hf=#dbbc7f --sb=#859289 --sf=#a7c080 --scb=#2d353b --scf=#859289";
+    # bemenu launcher colours (dynamic — follows current theme)
+    BEMENU_OPTS = "--tb=${palette.base01} --tf=${palette.base05} --fb=${palette.base01} --ff=${palette.base05} --nb=${palette.base01} --nf=${palette.base05} --hb=${palette.base03} --hf=${palette.base0A} --sb=${palette.base03} --sf=${palette.base0B} --scb=${palette.base00} --scf=${palette.base03}";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
@@ -363,7 +379,7 @@
   # On a new machine, just clone the dotfiles repo and rebuild.
 
   # ── Hyprland ──────────────────────────────────────────────────────────
-  xdg.configFile."hypr/hyprland.conf".source = ./dotfiles/hypr/hyprland.conf;
+  xdg.configFile."hypr/hyprland.conf".text = subst (builtins.readFile ./dotfiles/hypr/hyprland.conf);
   xdg.configFile."hypr/hypridle.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
@@ -403,15 +419,15 @@
   xdg.configFile."hypr/hyprpaper.conf".source = ./dotfiles/hypr/hyprpaper.conf;
 
   # ── Notifications ─────────────────────────────────────────────────────
-  xdg.configFile."mako/config".source = ./dotfiles/mako/config;
+  xdg.configFile."mako/config".text = subst (builtins.readFile ./dotfiles/mako/config);
 
   # ── Waybar ────────────────────────────────────────────────────────────
   xdg.configFile."waybar/config.jsonc".source = ./dotfiles/waybar/config.jsonc;
-  xdg.configFile."waybar/style.css".source = ./dotfiles/waybar/style.css;
+  xdg.configFile."waybar/style.css".text = subst (builtins.readFile ./dotfiles/waybar/style.css);
 
   # ── Terminal ──────────────────────────────────────────────────────────
-  xdg.configFile."ghostty/config".source = ./dotfiles/ghostty/config;
-  xdg.configFile."kitty/kitty.conf".source = ./dotfiles/kitty/kitty.conf;
+  xdg.configFile."ghostty/config".text = subst (builtins.readFile ./dotfiles/ghostty/config);
+  xdg.configFile."kitty/kitty.conf".text = subst (builtins.readFile ./dotfiles/kitty/kitty.conf);
 
   # ── LaTeX ─────────────────────────────────────────────────────────────
   xdg.configFile."latexmk/latexmkrc".source = ./dotfiles/latexmk/latexmkrc;
