@@ -2,10 +2,11 @@
 # NixOS rebuild wrapper — syncs config to /etc/nixos/, rebuilds, then
 # commits and pushes the config repo.
 #
-# Usage: rebuild [nixos-rebuild args...]
-#   rebuild              → nixos-rebuild switch
-#   rebuild boot         → nixos-rebuild boot
-#   rebuild test         → nixos-rebuild test
+# Usage: rebuild [action] [-m "commit message"]
+#   rebuild                           → nixos-rebuild switch (auto message)
+#   rebuild boot                      → nixos-rebuild boot
+#   rebuild -m "bemenu: replace wofi" → switch with custom commit message
+#   rebuild boot -m "test kernel"     → boot with custom commit message
 #
 # Managed by home-manager — do not edit directly.
 
@@ -13,12 +14,27 @@ set -eu
 
 REPO_DIR="$HOME"
 ETC_DIR="/etc/nixos"
-ACTION="${1:-switch}"
+ACTION="switch"
+COMMIT_MSG=""
 
-# Shift past the action so "$@" contains remaining args for nixos-rebuild
-if [ $# -gt 0 ]; then
-    shift
-fi
+# ── Parse arguments ──────────────────────────────────────────────────
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -m)
+            COMMIT_MSG="$2"
+            shift 2
+            ;;
+        switch|boot|test|dry-build|dry-activate|build|dry-build|edit|repl)
+            ACTION="$1"
+            shift
+            ;;
+        *)
+            echo "Usage: rebuild [switch|boot|test] [-m \"commit message\"]"
+            exit 1
+            ;;
+    esac
+done
 
 # ── Sync config files to /etc/nixos/ ─────────────────────────────────
 
@@ -30,7 +46,7 @@ sudo cp -rf "$REPO_DIR/dotfiles/"* "$ETC_DIR/dotfiles/"
 # ── Rebuild ──────────────────────────────────────────────────────────
 
 echo "==> Running nixos-rebuild $ACTION ..."
-sudo nixos-rebuild "$ACTION" "$@"
+sudo nixos-rebuild "$ACTION"
 
 # ── Git commit (only if rebuild succeeded) ────────────────────────────
 
@@ -45,8 +61,13 @@ if git diff --quiet --cached; then
     exit 0
 fi
 
-echo "==> Committing config changes ..."
-git commit -m "nixos-rebuild: $(date +%Y-%m-%d-%H%M)"
+if [ -n "$COMMIT_MSG" ]; then
+    echo "==> Committing: $COMMIT_MSG"
+    git commit -m "$COMMIT_MSG"
+else
+    echo "==> Committing config changes ..."
+    git commit -m "nixos-rebuild: $(date +%Y-%m-%d-%H%M)"
+fi
 
 # ── Push (non-fatal if no remote or auth fails) ──────────────────────
 
