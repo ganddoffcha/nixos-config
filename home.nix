@@ -435,6 +435,8 @@ in {
 
   # ── Scripts ───────────────────────────────────────────────────────────
   home.file."scripts/compiler".source = ./dotfiles/scripts/compiler;
+  # Curated base16 theme list — 20 hand-picked quality themes
+  home.file."dotfiles/curated-themes".source = ./dotfiles/curated-themes;
   home.file."scripts/getcomproot".source = ./dotfiles/scripts/getcomproot;
   home.file."scripts/hotspot".source = ./dotfiles/scripts/hotspot;
   home.file."scripts/opout".source = ./dotfiles/scripts/opout;

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Theme switcher — instant runtime color application.
 #   theme                  show current theme
-#   theme -l               list all available themes
+#   theme -l               list curated themes (default: 20 hand-picked)
+#   theme -a               list ALL 303 available themes
 #   theme -p <name>        preview theme colours in terminal
 #   theme -P               interactive bemenu picker (preview + apply)
 #   theme <name>           switch to named theme instantly (no rebuild)
@@ -16,6 +17,7 @@ set -e
 
 THEME_FILE="$HOME/dotfiles/current-theme"
 CACHE_FILE="$HOME/.cache/base16-themes-path"
+CURATED_FILE="$HOME/dotfiles/curated-themes"
 
 # ── Resolve base16-schemes directory ──────────────────────────────────────
 if [ -f "$CACHE_FILE" ]; then
@@ -169,14 +171,25 @@ preview_theme() {
 }
 
 # ── List all available themes ─────────────────────────────────────────────
-list_themes() {
+list_curated() {
+    if [ -f "$CURATED_FILE" ]; then
+        \grep -v '^#' "$CURATED_FILE" | \grep -v '^$' || true
+    else
+        list_all | head -20
+    fi
+}
+
+list_all() {
     find "$BASE16_DIR" -name '*.yaml' -type f 2>/dev/null | sed 's|.*/||; s|\.yaml$||' | sort
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────
 case "${1:-}" in
     -l|--list)
-        list_themes
+        list_curated
+        ;;
+    -a|--all)
+        list_all
         ;;
     -p|--preview)
         if [ -z "${2:-}" ]; then
@@ -186,7 +199,7 @@ case "${1:-}" in
         preview_theme "$2"
         ;;
     -P|--picker)
-        choice=$(list_themes | bemenu -l 20 -p "Theme:" 2>/dev/null || true)
+        choice=$(list_curated | bemenu -l 20 -p "Theme:" 2>/dev/null || true)
         if [ -n "$choice" ]; then
             apply_theme "$choice"
         fi
