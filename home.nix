@@ -80,6 +80,7 @@
     hyprlock
     hyprpicker
     hyprpolkitagent
+    bibata-cursors
     bemenu
     slurp
     grim
@@ -151,6 +152,16 @@
     font-awesome
     shanggu-fonts
   ];
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # CURSOR — managed declaratively instead of manual ~/.local/share/icons
+  # ═══════════════════════════════════════════════════════════════════════
+  home.pointerCursor = {
+    name = "Bibata-Modern-Classic";
+    package = pkgs.bibata-cursors;
+    size = 24;
+    gtk.enable = true;
+  };
 
   # ═══════════════════════════════════════════════════════════════════════
   # FONTS
@@ -391,6 +402,7 @@
         on-timeout = ${pkgs.systemd}/bin/systemctl suspend
     }
   '';
+  xdg.configFile."hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;
   xdg.configFile."hypr/hyprpaper.conf".source = ./dotfiles/hypr/hyprpaper.conf;
 
   # ── Waybar ────────────────────────────────────────────────────────────
