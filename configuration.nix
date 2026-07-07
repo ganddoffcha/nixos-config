@@ -271,6 +271,43 @@
   services.logind.settings.Login.HandleLidSwitchExternalPower = "hibernate";
 
   # ═══════════════════════════════════════════════════════════════════════
+  # BACKLIGHT — persist brightness across sleep/hibernate cycles
+  # systemd-backlight only saves at shutdown → sleep needs its own hook
+  # ═══════════════════════════════════════════════════════════════════════
+  systemd.services.backlight-sleep = {
+    description = "Save/restore backlight brightness across sleep/hibernate";
+    before = [ "sleep.target" ];
+    wantedBy = [ "sleep.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = pkgs.writeShellScript "backlight-sleep-save" ''
+        #!/bin/sh
+        BACKLIGHT=/sys/class/backlight/nvidia_wmi_ec_backlight/brightness
+        SAVED=/tmp/backlight-sleep-state
+        if [ -r "$BACKLIGHT" ]; then
+          cat "$BACKLIGHT" > "$SAVED"
+        fi
+      '';
+      ExecStop = pkgs.writeShellScript "backlight-sleep-restore" ''
+        #!/bin/sh
+        BACKLIGHT=/sys/class/backlight/nvidia_wmi_ec_backlight/brightness
+        SAVED=/tmp/backlight-sleep-state
+        # NVIDIA backlight may take a moment to reappear after S4 resume
+        for i in 1 2 3 4 5; do
+          if [ -w "$BACKLIGHT" ]; then
+            if [ -r "$SAVED" ]; then
+              cat "$SAVED" > "$BACKLIGHT"
+            fi
+            exit 0
+          fi
+          sleep 0.1
+        done
+      '';
+    };
+  };
+
+  # ═══════════════════════════════════════════════════════════════════════
   # NIX SETTINGS
   # ═══════════════════════════════════════════════════════════════════════
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
