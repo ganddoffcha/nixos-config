@@ -114,7 +114,8 @@ in {
     wf-recorder
     brightnessctl
     libnotify
-
+    wdisplays
+    wlr-randr
     # ── Media ───────────────────────────────────────────────────────────
     spotify
     mpv
