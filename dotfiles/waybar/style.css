@@ -23,7 +23,7 @@
 window#waybar {
     background-color: alpha(@base0, 0.5);
     border-bottom: 0px solid alpha(@base3, 0.5);
-    color: @base5;
+    color: #ffffff;
     transition-property: background-color;
     transition-duration: .5s;
 }
@@ -45,7 +45,7 @@ button:hover {
 #workspaces button {
     padding: 0 5px;
     background-color: transparent;
-    color: @base4;
+    color: #ffffff;
 }
 
 #workspaces button:hover {
@@ -84,7 +84,7 @@ button:hover {
 #power-profiles-daemon,
 #mpd {
     padding: 0 10px;
-    color: @base5;
+    color: #ffffff;
 }
 
 #window,
