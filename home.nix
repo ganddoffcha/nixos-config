@@ -51,6 +51,7 @@
     atuin
     lazygit
     tealdeer
+    nodejs
     procs
     xh
     zellij
