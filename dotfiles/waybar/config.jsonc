@@ -122,7 +122,7 @@
  "interval": 5
     },
     "backlight": {
-        // "device": "acpi_video1",
+        "device": "nvidia_wmi_ec_backlight",
         "format": "{percent}% {icon}",
         "format-icons": ["", "", "", "", "", "", "", "", ""]
     },

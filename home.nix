@@ -76,6 +76,8 @@
     mako
     gammastep
     hyprpaper
+    hypridle
+    hyprlock
     hyprpicker
     hyprpolkitagent
     bemenu
@@ -354,7 +356,41 @@
 
   # ── Hyprland ──────────────────────────────────────────────────────────
   xdg.configFile."hypr/hyprland.conf".source = ./dotfiles/hypr/hyprland.conf;
-  xdg.configFile."hypr/hypridle.conf".source = ./dotfiles/hypr/hypridle.conf;
+  xdg.configFile."hypr/hypridle.conf".text = ''
+    general {
+        lock_cmd = pidof hyprlock || hyprlock
+        before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session
+        after_sleep_cmd = hyprctl dispatch dpms on
+    }
+
+    listener {
+        timeout = 150
+        on-timeout = ${pkgs.brightnessctl}/bin/brightnessctl -s set 10
+        on-resume = ${pkgs.brightnessctl}/bin/brightnessctl -r
+    }
+
+    listener {
+        timeout = 150
+        on-timeout = ${pkgs.brightnessctl}/bin/brightnessctl -sd rgb:kbd_backlight set 0
+        on-resume = ${pkgs.brightnessctl}/bin/brightnessctl -rd rgb:kbd_backlight
+    }
+
+    listener {
+        timeout = 300
+        on-timeout = ${pkgs.systemd}/bin/loginctl lock-session
+    }
+
+    listener {
+        timeout = 330
+        on-timeout = hyprctl dispatch dpms off
+        on-resume = hyprctl dispatch dpms on && ${pkgs.brightnessctl}/bin/brightnessctl -r
+    }
+
+    listener {
+        timeout = 1800
+        on-timeout = ${pkgs.systemd}/bin/systemctl suspend
+    }
+  '';
   xdg.configFile."hypr/hyprpaper.conf".source = ./dotfiles/hypr/hyprpaper.conf;
 
   # ── Waybar ────────────────────────────────────────────────────────────
@@ -445,6 +481,25 @@
     };
     Install = {
       WantedBy = [ "paths.target" ];
+    };
+  };
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # IDLE MANAGEMENT — screen dim, lock, suspend on inactivity
+  # ═══════════════════════════════════════════════════════════════════════
+  systemd.user.services.hypridle = {
+    Unit = {
+      Description = "Hypridle idle daemon";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.hypridle}/bin/hypridle";
+      Restart = "on-failure";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
     };
   };
 
