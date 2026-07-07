@@ -10,7 +10,18 @@
 set -eu
 
 THEME_FILE="$HOME/dotfiles/current-theme"
-BASE16_DIR="$(find /nix/store/ -maxdepth 5 -path '*/base16-schemes*/share/themes' -type d 2>/dev/null | head -1)"
+
+# Find the base16-schemes directory.  It lives in the Nix store so the
+# hash changes on update, but we can locate it via a known theme file.
+_find_base16_dir() {
+    # Fast path: look for any file named "everforest.yaml" in the store.
+    # Its parent directory is the themes directory.
+    find /nix/store/ -maxdepth 6 -name everforest.yaml -type f 2>/dev/null \
+        | head -1 | xargs dirname 2>/dev/null
+}
+
+BASE16_DIR="$(_find_base16_dir)"
+[ -n "$BASE16_DIR" ] || die "Cannot find base16-schemes in the Nix store.  Try rebuilding first."
 
 list_themes() {
     ls "$BASE16_DIR" | sed 's/\.yaml$//' | sort
