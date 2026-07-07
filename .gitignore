@@ -2,6 +2,7 @@
 # Application state (not config)
 .asdf/
 .cache/
+.icons/
 .chessdb/
 .clinerules
 .config/
