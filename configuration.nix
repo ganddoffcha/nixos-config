@@ -43,12 +43,8 @@
     "resume_offset=210616320"
   ];
 
-  boot.initrd.availableKernelModules = [
-    "xhci_pci" "thunderbolt" "nvme" "usbhid"
-    "usb_storage" "sd_mod" "sdhci_pci"
-  ];
-  boot.kernelModules = [ "kvm-intel" ];
-  boot.extraModulePackages = [ ];
+  # Kernel modules are auto-detected in hardware-configuration.nix
+  # (boot.initrd.availableKernelModules, boot.kernelModules)
 
   # ═══════════════════════════════════════════════════════════════════════
   # NETWORKING
@@ -151,6 +147,11 @@
   services.asusd = {
     enable = true;
   };
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # THERMAL MANAGEMENT — adaptive CPU throttling for Intel laptops
+  # ═══════════════════════════════════════════════════════════════════════
+  services.thermald.enable = true;
 
   # ═══════════════════════════════════════════════════════════════════════
   # TAILSCALE
