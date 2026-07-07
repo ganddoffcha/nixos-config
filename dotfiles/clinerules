@@ -49,3 +49,18 @@ You MUST follow these instructions in every task:
 - **Done:** Sessions e through k — 7 consecutive sessions with successful bootstrap via `.clinerules`. Major accomplishments: NixOS/home-manager config review and fixes (initExtra, firmware, xdg portals), power optimization (17W→13.8W via 60Hz on battery + auto-refresh power profile switcher with udev trigger), declarative migration of 12+ config files to home-manager xdg.configFile, GitHub repo creation and push (nixos-config + documents), auto-refresh AC detection bugfix (ADP0 Mains-type), VSCode settings.json/keybindings.json removed from home-manager (Nix store symlinks are read-only — VSCode needs write access), nvim LaTeX automations catalogued, proactive memory recording rule established.
 - **Decisions:** Always search docs before asserting API semantics, use udev+systemd path units for power profile switching, migrate all user configs to home-manager for declarative reproducibility, VSCode settings must NOT be home-manager managed, memory recording must be proactive/immediate not batched.
 - **Pending:** `.clinerules` and `memory-strategy.md` edits from session k need to be committed and pushed; `git remote -q` bug in rebuild script fixed in dotfiles but Nix store symlink stale until next rebuild.
+
+### 2026-07-06 (sessions l-n)
+- **Done:** Session l — resolved all 3 open items from session k: committed + pushed pending edits, pushed blocked ahead-1 commit, confirmed git remote -q bug already fixed. Session m — dash migration: POSIX-ified all 11 scripts (bash→POSIX sh), switched /bin/sh from bash to dash for faster script execution, fixed cp -r→cp -rf in rebuild script (silent sync failure root cause), installed 12 modern Rust CLI tools. Session n — fixed lost Hyprland autostart at login (ZDOTDIR redirect caused .zprofile to be ignored), created ~/.config/zsh/.zprofile with uwsm start, added declarative entry in home.nix.
+- **Decisions:** POSIX scripts for portability, dash as /bin/sh for speed, ZDOTDIR symlink trick for XDG compliance with home-manager compatibility.
+- **Pending:** None — all changes committed and pushed.
+
+### 2026-07-07 (session a)
+- **Done:** Session a — removed ~/scripts/zoo launcher (reduced to just `code ~/ -n`, served no purpose), fixed missing dotfiles/zsh/.zprofile that was blocking rebuilds since session n, rebuild succeeded.
+- **Decisions:** Zoo script removed — user uses Ctrl+Alt+Z keybinding to open Zoo Code.
+- **Pending:** None.
+
+### 2026-07-07 (session b)
+- **Done:** Switched launcher from wofi to bemenu (user preference), configured lid-close hibernation (resumeDevice + resume_offset kernel param + logind HandleLidSwitch), added -m flag to rebuild script for custom commit messages, created SYSTEM.md with full system topology and cross-session context, diagnosed and fixed MCP memory server (removed nix-shell dependency, added nodejs to home.packages), discovered knowledge graph lives at ~/.zoo-memory/memory.json (JSONL format), updated knowledge graph with 8 new entities + 20 relations for nixos-config project.
+- **Decisions:** bemenu over wofi, lid-close→hibernate (not suspend), rebuild supports -m for descriptive commits, MCP server must not depend on nix-shell (use direct node from home-manager), SYSTEM.md documents topology for cross-session continuity.
+- **Pending:** Reboot needed for resume_offset kernel param to take effect; test hibernation with `systemctl hibernate` before trusting lid-close; reload VSCode window for MCP server to restart with fixed script.
