@@ -353,6 +353,7 @@
   # ── Workspace root files ──────────────────────────────────────────────
   home.file.".clinerules".source = ./dotfiles/clinerules;
   home.file."memory-strategy.md".source = ./dotfiles/memory-strategy.md;
+  home.file."SYSTEM.md".source = ./dotfiles/SYSTEM.md;
 
   # ── Scripts ───────────────────────────────────────────────────────────
   home.file."scripts/compiler".source = ./dotfiles/scripts/compiler;
