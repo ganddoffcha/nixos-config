@@ -9,7 +9,7 @@ return {
     config = function()
       require("catppuccin").setup({
         flavour = "mocha",
-        transparent_background = true,
+        transparent_background = false,
         integrations = {
           treesitter = true,
           native_lsp = { enabled = true },
