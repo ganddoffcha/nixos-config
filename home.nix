@@ -434,6 +434,10 @@
   home.file."scripts/texnow".source = ./dotfiles/scripts/texnow;
   home.file."scripts/toggle_touchpad".source = ./dotfiles/scripts/toggle_touchpad;
   home.file."scripts/yazi_picker".source = ./dotfiles/scripts/yazi_picker;
+  home.file.".local/bin/dmenupass" = {
+    source = ./dotfiles/scripts/dmenupass;
+    executable = true;
+  };
 
   # ── App configs ───────────────────────────────────────────────────────
   xdg.configFile."nvim/init.lua".source = ./dotfiles/nvim/init.lua;
@@ -445,6 +449,7 @@
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
+  xdg.configFile."python/pythonrc".source = ./dotfiles/python/pythonrc;
   # ═══════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT — auto-switch compositor settings on AC state change
   # ═══════════════════════════════════════════════════════════════════════

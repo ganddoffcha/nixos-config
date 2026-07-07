@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# GUI askpass for sudo using bemenu
+# Reads password via bemenu (dmenu-compatible password prompt)
+bemenu \
+  --password hide \
+  --prompt "${*:-Password:}" \
+  --ignorecase \
+  --list 0 \
+  2>/dev/null
