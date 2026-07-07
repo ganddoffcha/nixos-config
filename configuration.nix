@@ -270,5 +270,13 @@
     enable = true;
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
     polarity = "dark";
+    fonts = {
+      sizes = {
+        applications = 10;
+        desktop = 10;
+        popups = 10;
+        terminal = 12;
+      };
+    };
   };
 }
