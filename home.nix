@@ -327,8 +327,6 @@
     GOMODCACHE = "${config.xdg.cacheHome}/go/mod";
     # Cargo
     CARGO_HOME = "${config.xdg.dataHome}/cargo";
-    # Python
-    PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
     # Sudo
     SUDO_ASKPASS = "${config.home.homeDirectory}/.local/bin/dmenupass";
     # XDG compliance — move dotfiles out of ~/
@@ -449,7 +447,6 @@
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
-  xdg.configFile."python/pythonrc".source = ./dotfiles/python/pythonrc;
   # ═══════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT — auto-switch compositor settings on AC state change
   # ═══════════════════════════════════════════════════════════════════════
