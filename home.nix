@@ -268,6 +268,10 @@
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
     '';
+    profileExtra = ''
+      # Start Hyprland via uwsm (Wayland session manager)
+      uwsm check may-start && uwsm start hyprland-uwsm.desktop
+    '';
   };
 
   # ═══════════════════════════════════════════════════════════════════════
