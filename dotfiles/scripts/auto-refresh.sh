@@ -70,20 +70,25 @@ if [ -z "$actual_hz" ]; then
     exit 0
 fi
 
-# Skip if already at the right rate AND stamp matches (avoids unnecessary
-# mode switches during rebuilds). Must check actual hz FIRST because
-# Hyprland config reloads can change the mode externally.
-if [ "$actual_hz" = "$expected_hz" ] && [ -f "$STAMP_FILE" ] && [ "$(cat "$STAMP_FILE")" = "$desired" ]; then
+# Check if animations are in the expected state (survives Hyprland reloads
+# during nixos-rebuild which reset keywords to hyprland.conf defaults).
+actual_anim=$(hyprctl getoption animations:enabled 2>/dev/null | head -1)
+expected_anim="0"
+if [ "$desired" = "charger" ]; then
+    expected_anim="1"
+fi
+
+# Skip if everything matches (avoids unnecessary mode switches).
+if [ "$actual_hz" = "$expected_hz" ] && [ "$actual_anim" = "$expected_anim" ] && \
+   [ -f "$STAMP_FILE" ] && [ "$(cat "$STAMP_FILE")" = "$desired" ]; then
     exit 0
 fi
 
-# Apply if the monitor doesn't match the expected refresh rate
-if [ "$actual_hz" != "$expected_hz" ]; then
-    if [ "$desired" = "charger" ]; then
-        apply_charger
-    else
-        apply_battery
-    fi
+# Apply compositor settings
+if [ "$desired" = "charger" ]; then
+    apply_charger
+else
+    apply_battery
 fi
 
 echo "$desired" > "$STAMP_FILE"
