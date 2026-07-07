@@ -238,9 +238,11 @@
   };
 
   # ═══════════════════════════════════════════════════════════════════════
-  # FONTS — moved to home.nix (user-level fontconfig)
+  # FONTS — subpixel rendering at system level, rest in home.nix
   # ═══════════════════════════════════════════════════════════════════════
   fonts.enableDefaultPackages = false;
+  fonts.fontconfig.subpixel.rgba = "rgb";
+  fonts.fontconfig.subpixel.lcdfilter = "default";
 
   # ═══════════════════════════════════════════════════════════════════════
   # INPUT METHOD

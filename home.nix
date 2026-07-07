@@ -155,6 +155,9 @@
   # ═══════════════════════════════════════════════════════════════════════
   fonts.fontconfig = {
     enable = true;
+    # Rendering — tuned for 2560×1600 @ 186 DPI LCD panel
+    hinting = "slight";
+    # Font families
     defaultFonts = {
       sansSerif = [ "Google Sans" "Shanggu Sans" ];
       serif = [ "Shanggu Serif" ];
