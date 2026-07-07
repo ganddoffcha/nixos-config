@@ -504,6 +504,42 @@
   };
 
   # ═══════════════════════════════════════════════════════════════════════
+  # DESKTOP SERVICES — notification daemon, screen temperature
+  # Moved from hyprland exec-once to systemd for declarative reproducibility
+  # ═══════════════════════════════════════════════════════════════════════
+  systemd.user.services.mako = {
+    Unit = {
+      Description = "Mako notification daemon";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.mako}/bin/mako";
+      Restart = "on-failure";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  systemd.user.services.gammastep = {
+    Unit = {
+      Description = "Gammastep screen colour temperature";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.gammastep}/bin/gammastep";
+      Restart = "on-failure";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  # ═══════════════════════════════════════════════════════════════════════
   # POST-REBUILD — run auto-refresh after home-manager activation so
   # the monitor mode is corrected immediately (Hyprland config reloads
   # during rebuild can reset it to the wrong refresh rate).
