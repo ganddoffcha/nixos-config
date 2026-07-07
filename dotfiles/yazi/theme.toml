@@ -1,8 +1,4 @@
 # Stylix dynamic — placeholders replaced by home.nix
-[flavor]
-dark  = "{{base00}}"
-light = "{{base07}}"
-
 [status]
 separator_open  = "{{base03}}"
 separator_close = "{{base03}}"
