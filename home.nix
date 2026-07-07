@@ -184,16 +184,16 @@
   # ═══════════════════════════════════════════════════════════════════════
   programs.git = {
     enable = true;
-    userName = "gc";
-    userEmail = "gc@zephyrus";
-    extraConfig = {
+    settings = {
+      user.name = "gc";
+      user.email = "gc@zephyrus";
       init.defaultBranch = "main";
       pull.rebase = true;
       core.pager = "delta";
       delta.navigate = true;
       delta.side-by-side = true;
       delta.line-numbers = true;
-      delta.syntax-theme = "Dracula";
+      delta.syntax-theme = "catppuccin-mocha";
       interactive.diffFilter = "delta --color-only";
     };
   };

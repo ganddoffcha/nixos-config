@@ -75,3 +75,6 @@ dotfiles/scripts/hotspot
 .vscode
 .vscode-shared
 .chessdb
+.Xresources
+.gtkrc-2.0
+.themes/
