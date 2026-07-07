@@ -77,7 +77,6 @@
     hyprpaper
     hyprpicker
     hyprpolkitagent
-    wofi
     bemenu
     slurp
     grim
@@ -131,6 +130,7 @@
     python3
     elan
     emacs
+    tree-sitter
     openssl
     nss
     nssTools
@@ -344,10 +344,6 @@
   # ── Terminal ──────────────────────────────────────────────────────────
   xdg.configFile."ghostty/config".source = ./dotfiles/ghostty/config;
 
-  # ── Launcher ──────────────────────────────────────────────────────────
-  xdg.configFile."wofi/config".source = ./dotfiles/wofi/config;
-  xdg.configFile."wofi/style.css".source = ./dotfiles/wofi/style.css;
-
   # ── LaTeX ─────────────────────────────────────────────────────────────
   xdg.configFile."latexmk/latexmkrc".source = ./dotfiles/latexmk/latexmkrc;
 
@@ -369,7 +365,11 @@
   home.file."scripts/yazi_picker".source = ./dotfiles/scripts/yazi_picker;
 
   # ── App configs ───────────────────────────────────────────────────────
-  xdg.configFile."nvim/init.vim".source = ./dotfiles/nvim/init.vim;
+  xdg.configFile."nvim/init.lua".source = ./dotfiles/nvim/init.lua;
+  xdg.configFile."nvim/lua/user/options.lua".source = ./dotfiles/nvim/lua/user/options.lua;
+  xdg.configFile."nvim/lua/user/keymaps.lua".source = ./dotfiles/nvim/lua/user/keymaps.lua;
+  xdg.configFile."nvim/lua/user/autocmds.lua".source = ./dotfiles/nvim/lua/user/autocmds.lua;
+  xdg.configFile."nvim/lua/user/plugins.lua".source = ./dotfiles/nvim/lua/user/plugins.lua;
   xdg.configFile."qutebrowser/config.py".source = ./dotfiles/qutebrowser/config.py;
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
