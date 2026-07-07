@@ -20,6 +20,9 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 10;
 
+  # Hibernation — resume from swapfile on root partition
+  boot.resumeDevice = "/dev/disk/by-uuid/0e34ea3e-a813-4d7b-8b89-48b78b4fc5a9";
+
   # Kernel parameters
   #   i8042.reset / kbdreset / atkbd.reset — fix keyboard after suspend/resume
   #   usbcore.autosuspend=-1 — prevent ASUS USB keyboard from disconnecting
@@ -27,6 +30,7 @@
   #   iwlwifi.power_save=1 — WiFi power saving
   #   i915.enable_guc=3 — enable GuC + HuC firmware for iGPU power management
   #   mem_sleep_default=deep — prefer S3 deep sleep over s2idle
+  #   resume_offset=210616320 — physical offset of /swapfile for hibernation
   boot.kernelParams = [
     "i8042.reset=1"
     "i8042.kbdreset=1"
@@ -36,6 +40,7 @@
     "iwlwifi.power_save=1"
     "i915.enable_guc=3"
     "mem_sleep_default=deep"
+    "resume_offset=210616320"
   ];
 
   boot.initrd.availableKernelModules = [
@@ -256,6 +261,12 @@
   # SSH
   # ═══════════════════════════════════════════════════════════════════════
   services.openssh.enable = true;
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # LOGIND — lid-close → hibernate instead of suspend
+  # ═══════════════════════════════════════════════════════════════════════
+  services.logind.lidSwitch = "hibernate";
+  services.logind.lidSwitchExternalPower = "hibernate";
 
   # ═══════════════════════════════════════════════════════════════════════
   # NIX SETTINGS
