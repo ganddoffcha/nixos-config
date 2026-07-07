@@ -293,15 +293,17 @@
         #!/bin/sh
         BACKLIGHT=/sys/class/backlight/nvidia_wmi_ec_backlight/brightness
         SAVED=/tmp/backlight-sleep-state
-        # NVIDIA backlight may take a moment to reappear after S4 resume
-        for i in 1 2 3 4 5; do
+        # NVIDIA driver re-initializes backlight ~400ms after S4 resume.
+        # Sleep first to let it finish, then restore our saved value.
+        sleep 1
+        for i in 1 2 3 4 5 6 7 8 9 10; do
           if [ -w "$BACKLIGHT" ]; then
             if [ -r "$SAVED" ]; then
               cat "$SAVED" > "$BACKLIGHT"
             fi
             exit 0
           fi
-          sleep 0.1
+          sleep 0.2
         done
       '';
     };
