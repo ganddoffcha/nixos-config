@@ -293,18 +293,18 @@
         #!/bin/sh
         SAVED=/tmp/backlight-sleep-state
         [ -r "$SAVED" ] || exit 0
-        TARGET=$(cat "$SAVED")
 
-        # After S4 resume, the NVIDIA WMI backlight channel to the EC
-        # may not be responsive yet. Use brightnessctl which handles
-        # retry and proper ioctl/sysfs sequencing.
-        sleep 1
-        for i in $(seq 1 20); do
-          if ${pkgs.brightnessctl}/bin/brightnessctl -d nvidia_wmi_ec_backlight set "$TARGET" >/dev/null 2>&1; then
-            exit 0
+        # The NVIDIA WMI backlight EC channel isn't responsive immediately
+        # after S4 resume — writes to sysfs succeed but actual_brightness
+        # doesn't change. Background a delayed restore to give the EC
+        # time to fully re-initialize (~10s empirically).
+        (
+          sleep 10
+          if [ -r "$SAVED" ]; then
+            ${pkgs.brightnessctl}/bin/brightnessctl -d nvidia_wmi_ec_backlight \
+              set "$(cat "$SAVED")" >/dev/null 2>&1
           fi
-          sleep 0.3
-        done
+        ) &
       '';
     };
   };
