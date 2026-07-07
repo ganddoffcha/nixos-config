@@ -1,11 +1,10 @@
 { config, lib, pkgs, ... }:
 
 {
-  imports =
-    [
-      ./hardware-configuration.nix
-      <home-manager/nixos>
-    ];
+  imports = [
+    ./hardware-configuration.nix
+    # home-manager and stylix are imported via flake.nix
+  ];
 
   # ═══════════════════════════════════════════════════════════════════════
   # HOME MANAGER — user config lives in home.nix
