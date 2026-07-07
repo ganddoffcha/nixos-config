@@ -128,8 +128,6 @@ in {
     # ── Graphics ────────────────────────────────────────────────────────
     gimp3
     imagemagick
-    inkscape
-
     # ── Documents ───────────────────────────────────────────────────────
     texlive.combined.scheme-full
     zathura
