@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Theme switcher for Stylix base16 themes.
 # Usage:
 #   theme                  show current theme
@@ -36,12 +36,12 @@ die() {
 
 # Print a colour swatch block (24-bit true colour terminal)
 swatch() {
-    hex="$1"
+    hex="${1#\#}"  # strip leading # if present
     label="${2:-}"
     r=$((0x${hex:0:2}))
     g=$((0x${hex:2:2}))
     b=$((0x${hex:4:2}))
-    printf '\033[48;2;%d;%d;%dm   \033[0m %s  \033[38;2;%d;%d;%dm%s\033[0m\n' \
+    printf '\033[48;2;%d;%d;%dm   \033[0m #%s  \033[38;2;%d;%d;%dm%s\033[0m\n' \
         "$r" "$g" "$b" "$hex" "$r" "$g" "$b" "$label"
 }
 
