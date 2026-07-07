@@ -1,7 +1,8 @@
 # Stylix dynamic — placeholders replaced by home.nix
 [status]
-separator_open  = "{{base03}}"
-separator_close = "{{base03}}"
+separator_open  = "["
+separator_close = "]"
+separator_style = { fg = "{{base03}}" }
 
 [manager]
 cwd = { fg = "{{base0D}}" }
@@ -15,18 +16,3 @@ rules = [
 	{ mime = "application/gzip", fg = "{{base0A}}" },
 	{ mime = "application/x-tar", fg = "{{base0A}}" },
 ]
-
-[syntect_theme]
-bg          = "{{base00}}"
-fg          = "{{base05}}"
-comment     = "{{base03}}"
-string      = "{{base0B}}"
-constant    = "{{base09}}"
-function    = "{{base0D}}"
-keyword     = "{{base0E}}"
-operator    = "{{base0C}}"
-identifier  = "{{base0D}}"
-number      = "{{base09}}"
-selection_bg = "{{base02}}"
-line_number = "{{base03}}"
-line_number_active = "{{base04}}"
