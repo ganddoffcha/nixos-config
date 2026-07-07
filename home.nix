@@ -342,8 +342,8 @@
     TEXMFHOME = "${config.xdg.dataHome}/texmf";
     TEXMFVAR = "${config.xdg.cacheHome}/texlive/texmf-var";
     TEXMFCONFIG = "${config.xdg.configHome}/texlive/texmf-config";
-    # bemenu launcher colours (Catppuccin Mocha)
-    BEMENU_OPTS = "--tb=#181825 --tf=#cdd6f4 --fb=#181825 --ff=#cdd6f4 --nb=#181825 --nf=#cdd6f4 --hb=#45475a --hf=#f9e2af --sb=#45475a --sf=#a6e3a1 --scb=#1e1e2e --scf=#45475a";
+    # bemenu launcher colours (Everforest)
+    BEMENU_OPTS = "--tb=#343f44 --tf=#d3c6aa --fb=#343f44 --ff=#d3c6aa --nb=#343f44 --nf=#d3c6aa --hb=#859289 --hf=#dbbc7f --sb=#859289 --sf=#a7c080 --scb=#2d353b --scf=#859289";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
@@ -434,6 +434,10 @@
   home.file."scripts/texnow".source = ./dotfiles/scripts/texnow;
   home.file."scripts/toggle_touchpad".source = ./dotfiles/scripts/toggle_touchpad;
   home.file."scripts/yazi_picker".source = ./dotfiles/scripts/yazi_picker;
+  home.file."scripts/theme" = {
+    source = ./dotfiles/scripts/theme;
+    executable = true;
+  };
   home.file.".local/bin/dmenupass" = {
     source = ./dotfiles/scripts/dmenupass;
     executable = true;

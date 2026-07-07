@@ -1,0 +1,46 @@
+#!/bin/sh
+# Theme switcher — updates dotfiles/current-theme and rebuilds.
+# Usage: theme [name]           switch to named base16 theme
+#        theme -l               list available themes
+#        theme                  show current theme
+
+set -eu
+
+THEME_FILE="$HOME/dotfiles/current-theme"
+BASE16_DIR="$(find /nix/store/ -maxdepth 5 -path '*/base16-schemes*/share/themes' -type d 2>/dev/null | head -1)"
+
+list_themes() {
+    ls "$BASE16_DIR" | sed 's/\.yaml$//' | sort
+}
+
+current_theme() {
+    cat "$THEME_FILE" 2>/dev/null || echo "unknown"
+}
+
+die() {
+    echo "$1" >&2
+    exit 1
+}
+
+case "${1:-}" in
+    ""|-c|--current)
+        current_theme
+        ;;
+    -l|--list)
+        list_themes
+        ;;
+    *)
+        theme="$1"
+        # Validate theme exists
+        if [ ! -f "$BASE16_DIR/$theme.yaml" ]; then
+            echo "Unknown theme: $theme" >&2
+            echo "Available themes:" >&2
+            list_themes >&2
+            exit 1
+        fi
+        echo "$theme" > "$THEME_FILE"
+        echo "Switched to theme: $theme"
+        echo "Rebuilding..."
+        exec "$HOME/scripts/rebuild" -m "theme: switch to $theme"
+        ;;
+esac

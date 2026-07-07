@@ -1,30 +1,19 @@
-/* Catppuccin Mocha */
-@define-color base #1e1e2e;
-@define-color mantle #181825;
-@define-color crust #11111b;
-@define-color surface0 #313244;
-@define-color surface1 #45475a;
-@define-color surface2 #585b70;
-@define-color overlay0 #6c7086;
-@define-color overlay1 #7f849c;
-@define-color overlay2 #9399b2;
-@define-color subtext0 #a6adc8;
-@define-color subtext1 #bac2de;
-@define-color text #cdd6f4;
-@define-color blue #89b4fa;
-@define-color lavender #b4befe;
-@define-color sapphire #74c7ec;
-@define-color sky #89dceb;
-@define-color teal #94e2d5;
-@define-color green #a6e3a1;
-@define-color yellow #f9e2af;
-@define-color peach #fab387;
-@define-color maroon #eba0ac;
-@define-color red #f38ba8;
-@define-color mauve #cba6f7;
-@define-color pink #f5c2e7;
-@define-color flamingo #f2cdcd;
-@define-color rosewater #f5e0dc;
+/* Everforest */
+@define-color base0 #2d353b;
+@define-color base1 #343f44;
+@define-color base2 #475258;
+@define-color base3 #859289;
+@define-color base4 #9da9a0;
+@define-color base5 #d3c6aa;
+@define-color base6 #e6e2cc;
+@define-color base7 #fdf6e3;
+@define-color red #e67e80;
+@define-color orange #e69875;
+@define-color yellow #dbbc7f;
+@define-color green #a7c080;
+@define-color cyan #83c092;
+@define-color blue #7fbbb3;
+@define-color purple #d699b6;
 
 * {
     font-family: Google Sans;
@@ -32,9 +21,9 @@
 }
 
 window#waybar {
-    background-color: alpha(@crust, 0.5);
-    border-bottom: 0px solid alpha(@surface1, 0.5);
-    color: @text;
+    background-color: alpha(@base0, 0.5);
+    border-bottom: 0px solid alpha(@base3, 0.5);
+    color: @base5;
     transition-property: background-color;
     transition-duration: .5s;
 }
@@ -56,15 +45,15 @@ button:hover {
 #workspaces button {
     padding: 0 5px;
     background-color: transparent;
-    color: @subtext0;
+    color: @base4;
 }
 
 #workspaces button:hover {
-    background: alpha(@surface0, 0.5);
+    background: alpha(@base2, 0.5);
 }
 
 #workspaces button.active {
-    background: alpha(@surface0, 0);
+    background: alpha(@base2, 0);
     box-shadow: inset 0 -3px @blue;
 }
 
@@ -73,7 +62,7 @@ button:hover {
 }
 
 #mode {
-    background-color: @surface1;
+    background-color: @base3;
     box-shadow: inset 0 -3px @blue;
 }
 
@@ -95,7 +84,7 @@ button:hover {
 #power-profiles-daemon,
 #mpd {
     padding: 0 10px;
-    color: @text;
+    color: @base5;
 }
 
 #window,

@@ -265,10 +265,15 @@
 
   # ═══════════════════════════════════════════════════════════════════════
   # STYLIX — system-wide theming (targets configured in home.nix)
+  # Theme name read from dotfiles/current-theme; change it and rebuild
+  # to switch themes.  Run `theme` from bemenu/terminal to pick one.
   # ═══════════════════════════════════════════════════════════════════════
-  stylix = {
+  stylix = let
+    themeName = builtins.replaceStrings ["\n"] [""]
+      (builtins.readFile ./dotfiles/current-theme);
+  in {
     enable = true;
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/${themeName}.yaml";
     polarity = "dark";
     fonts = {
       sizes = {
