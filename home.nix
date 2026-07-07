@@ -114,16 +114,6 @@
     musescore
     muse-sounds-manager
 
-    # ── Gaming ──────────────────────────────────────────────────────────
-    prismlauncher
-    stockfish
-    gnuchess
-    pychess
-    cutechess
-    lc0
-    xboard
-    ckan
-
     # ── Network ─────────────────────────────────────────────────────────
     speedtest-cli
     wireguard-tools
@@ -465,12 +455,6 @@
       name = "File manager";
       exec = "ghostty -e yazi %F";
       mimeType = [ "inode/directory" "application/zip" "application/x-tar" "application/gzip" "application/x-xz" "application/x-7z-compressed" "application/x-rar" "application/x-bzip2" ];
-      noDisplay = true;
-    };
-    "ckan-handler" = {
-      name = "CKAN Launcher";
-      exec = "ckan gui %u";
-      mimeType = [ "x-scheme-handler/ckan" ];
       noDisplay = true;
     };
   };

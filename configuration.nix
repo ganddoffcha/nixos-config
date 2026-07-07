@@ -212,8 +212,8 @@
   # FIREWALL
   # ═══════════════════════════════════════════════════════════════════════
   networking.firewall.trustedInterfaces = [ "p2p-wl+" ];
-  networking.firewall.allowedTCPPorts = [ 7236 7250 ];
-  networking.firewall.allowedUDPPorts = [ 7236 5353 ];
+  networking.firewall.allowedTCPPorts = [ ];
+  networking.firewall.allowedUDPPorts = [ 5353 ];
 
   # ═══════════════════════════════════════════════════════════════════════
   # AVAHI (mDNS)
@@ -222,19 +222,6 @@
     enable = true;
     nssmdns4 = true;
     openFirewall = true;
-  };
-
-  # ═══════════════════════════════════════════════════════════════════════
-  # STEAM
-  # ═══════════════════════════════════════════════════════════════════════
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true;
-    dedicatedServer.openFirewall = true;
-    localNetworkGameTransfers.openFirewall = true;
-    extraCompatPackages = with pkgs; [
-      proton-ge-bin
-    ];
   };
 
   # ═══════════════════════════════════════════════════════════════════════
