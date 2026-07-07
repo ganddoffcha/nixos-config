@@ -159,7 +159,7 @@
     defaultFonts = {
       sansSerif = [ "Google Sans" "Shanggu Sans" ];
       serif = [ "Shanggu Serif" ];
-      monospace = [ "Google Sans Mono" ];
+      monospace = [ "Google Sans Mono" "Shanggu Mono" ];
       emoji     = [ "Noto Color Emoji" ];
     };
   };
