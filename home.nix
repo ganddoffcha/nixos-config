@@ -64,9 +64,7 @@
 
     # ── File Management ─────────────────────────────────────────────────
     yazi
-    unzip
-    zip
-    gzip
+    ouch
     poppler-utils
     pdftk
 
