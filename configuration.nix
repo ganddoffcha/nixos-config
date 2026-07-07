@@ -36,7 +36,6 @@
     "i8042.kbdreset=1"
     "atkbd.reset=1"
     "usbcore.autosuspend=-1"
-    "pcie_aspm.policy=powersupersave"
     "iwlwifi.power_save=1"
     "i915.enable_guc=3"
     "mem_sleep_default=deep"
