@@ -104,7 +104,6 @@
     # ── Documents ───────────────────────────────────────────────────────
     texlive.combined.scheme-full
     zathura
-    libreoffice-qt6-fresh
 
     # ── Music ───────────────────────────────────────────────────────────
     musescore
