@@ -262,4 +262,13 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   system.stateVersion = "24.11";
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # STYLIX — system-wide theming
+  # ═══════════════════════════════════════════════════════════════════════
+  stylix = {
+    enable = true;
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
+    polarity = "dark";
+  };
 }

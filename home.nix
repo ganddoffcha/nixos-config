@@ -303,7 +303,6 @@
     # less colors
     LESS = "R";
     # QT / Java / Mozilla
-    QT_QPA_PLATFORMTHEME = "gtk2";
     MOZ_USE_XINPUT2 = "1";
     _JAVA_AWT_WM_NONREPARENTING = "1";
     # Go
