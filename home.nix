@@ -410,7 +410,7 @@ in {
         on-timeout = ${pkgs.systemd}/bin/systemctl suspend
     }
   '';
-  # AC power config — no idle actions at all. Screen stays on indefinitely.
+  # AC power config — no idle-triggered actions. Hibernate/suspend still locks.
   xdg.configFile."hypr/hypridle-ac.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
