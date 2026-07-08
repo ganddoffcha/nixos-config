@@ -62,6 +62,27 @@ else
     expected_hz="60"
 fi
 
+# ── Hypridle config switching ────────────────────────────────────────
+# Runs independently of the stamp guard so the correct idle policy is
+# always active (survives rebuilds, Hyprland restarts, etc.).
+HYPRIDLE_ACTIVE="$HOME/.config/hypr/hypridle-active.conf"
+HYPRIDLE_STAMP="/tmp/auto-refresh-hypridle-state"
+
+if [ "$desired" = "charger" ]; then
+    HYPRIDLE_SRC="$HOME/.config/hypr/hypridle-ac.conf"
+else
+    HYPRIDLE_SRC="$HOME/.config/hypr/hypridle.conf"
+fi
+
+if [ "$(cat "$HYPRIDLE_STAMP" 2>/dev/null)" != "$desired" ] || \
+   ! cmp -s "$HYPRIDLE_ACTIVE" "$HYPRIDLE_SRC" 2>/dev/null; then
+    if [ -f "$HYPRIDLE_SRC" ]; then
+        cp -f "$HYPRIDLE_SRC" "$HYPRIDLE_ACTIVE"
+        systemctl --user restart hypridle 2>/dev/null || true
+        echo "$desired" > "$HYPRIDLE_STAMP"
+    fi
+fi
+
 # Check what Hyprland is actually running (survives Hyprland restarts)
 actual_hz=$(current_refresh_rate)
 
