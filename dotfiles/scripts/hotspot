@@ -1,4 +1,13 @@
 #!/bin/sh
+# hotspot — start a Wi-Fi hotspot for sharing internet.
+# Usage: hotspot [-h]
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+    echo "Usage: hotspot"
+    echo "  Start a Wi-Fi hotspot (SSID: NixOS) on wlo1."
+    echo "  Opens UDP 67/53 and TCP 53 for DHCP+DNS."
+    exit 0
+fi
 
 nmcli device wifi hotspot ifname wlo1 ssid NixOS password henlo69420
 

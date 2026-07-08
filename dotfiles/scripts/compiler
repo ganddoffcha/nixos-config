@@ -1,10 +1,28 @@
 #!/bin/sh
+# compiler — compile or run documents based on file extension.
+# Usage: compiler <file>
+#
+# Supported extensions:
+#   .tex       LaTeX (via latexmk)
+#   .mom/.ms   groff mom/ms macros → PDF
+#   .md        Markdown → PDF (lowdown/groffdown/pandoc)
+#   .org       Org-mode → PDF (emacs batch)
+#   .rmd/.Rmd  R Markdown → PDF
+#   .c/.cpp    C/C++ → compile + run
+#   .go        Go → run
+#   .java      Java → compile + run
+#   .py        Python → run
+#   .rs        Rust → cargo build
+#   .scad      OpenSCAD → STL
+#   .sass      Sass → CSS
+#   .sent      Open as presentation
+#   [0-9]      man page → PDF
+#   *          Run via shebang
 
-# This script will compile or run another finishing operation on a document. I
-# have this script run via vim.
-
-# Compiles .tex. groff (.mom, .ms), .rmd, .md, .org.  Opens .sent files as sent
-# presentations. Runs scripts based on extension or shebang.
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+    sed -n '2,20p' "$0" | sed 's/^# //; s/^#$//'
+    exit 0
+fi
 
 file="${1}"
 ext="${file##*.}"

@@ -1,7 +1,8 @@
 #!/bin/sh
 # GUI askpass for sudo using bemenu
 # Reads password via bemenu (dmenu-compatible password prompt)
-bemenu \
+# Uses wrapper to pick up runtime theme colours
+exec ~/scripts/bemenu \
   --password hide \
   --prompt "${*:-Password:}" \
   --ignorecase \

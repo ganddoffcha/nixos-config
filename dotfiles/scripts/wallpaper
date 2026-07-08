@@ -141,6 +141,18 @@ preview_wallpaper() {
 
 # ── Main ─────────────────────────────────────────────────────────────────
 case "${1:-}" in
+    -h|--help)
+        echo "Usage: wallpaper [option] [<image>] [<theme>]"
+        echo ""
+        echo "  wallpaper                     list available wallpapers"
+        echo "  wallpaper <image>             set wallpaper + auto-match theme"
+        echo "  wallpaper <image> <theme>     set wallpaper + specific theme"
+        echo "  wallpaper -l                  list available wallpapers"
+        echo "  wallpaper -p <image>          preview dominant colours"
+        echo "  wallpaper -m <image>          show best-matching themes (ranked)"
+        echo "  wallpaper -h                  show this help"
+        exit 0
+        ;;
     -l|--list)
         list_wallpapers
         ;;

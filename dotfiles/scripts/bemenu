@@ -1,0 +1,13 @@
+#!/bin/sh
+# bemenu wrapper — sources runtime theme colours so bemenu follows
+# the active theme without requiring re-login.
+# Managed by home-manager — do not edit directly.
+
+# Source runtime BEMENU_OPTS (written by ~/scripts/theme on switch)
+if [ -f "$HOME/.config/bemenu/env" ]; then
+    . "$HOME/.config/bemenu/env"
+    export BEMENU_OPTS
+fi
+
+# Prepend .nix-profile/bin so we find the real bemenu, not this wrapper
+PATH="$HOME/.nix-profile/bin:$PATH" exec bemenu "$@"

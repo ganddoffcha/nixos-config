@@ -1,4 +1,15 @@
 #!/bin/sh
+# texnow — create a new LaTeX project from template and open in nvim.
+# Usage: texnow [name]
+#
+# Creates ~/Documents/texnow/<name>/ with leopard.sty and template.tex,
+# then opens the .tex file in nvim.  If no name is given, a timestamp
+# is used (YYYYMMDDHHMMSS).
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+    sed -n '2,8p' "$0" | sed 's/^# //; s/^#$//'
+    exit 0
+fi
 
 file="$(date +%Y%m%d%H%M%S)"
 
