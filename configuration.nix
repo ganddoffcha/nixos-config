@@ -255,6 +255,7 @@
   # ═══════════════════════════════════════════════════════════════════════
   services.logind.settings.Login.HandleLidSwitch = "hibernate";
   services.logind.settings.Login.HandleLidSwitchExternalPower = "hibernate";
+  services.logind.settings.Login.HandleSuspendKey = "hibernate";
 
   # ═══════════════════════════════════════════════════════════════════════
   # NIX SETTINGS
