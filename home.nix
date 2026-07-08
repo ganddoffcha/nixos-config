@@ -410,24 +410,12 @@ in {
         on-timeout = ${pkgs.systemd}/bin/systemctl suspend
     }
   '';
-  # AC power config — no lock, no DPMS off, no suspend. Screen stays on.
+  # AC power config — no idle actions at all. Screen stays on indefinitely.
   xdg.configFile."hypr/hypridle-ac.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
         before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session
         after_sleep_cmd = hyprctl dispatch dpms on
-    }
-
-    listener {
-        timeout = 150
-        on-timeout = ${pkgs.brightnessctl}/bin/brightnessctl -s set 10
-        on-resume = ${pkgs.brightnessctl}/bin/brightnessctl -r
-    }
-
-    listener {
-        timeout = 150
-        on-timeout = ${pkgs.brightnessctl}/bin/brightnessctl -sd rgb:kbd_backlight set 0
-        on-resume = ${pkgs.brightnessctl}/bin/brightnessctl -rd rgb:kbd_backlight
     }
   '';
   xdg.configFile."hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;
