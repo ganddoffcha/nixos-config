@@ -646,9 +646,12 @@ for i in range(16):
         local c="$1"
         for i in $(seq 0 15); do
           local hex="''${colors[$i]}"
-          local key; key=$(printf 'base%02x' "$i")
-          c="''${c//"{{$key}}"/#''${hex}}"
-          c="''${c//"{{x$key}}"/''${hex}}"
+          local key_lower; key_lower=$(printf 'base%02x' "$i")
+          local key_upper; key_upper=$(printf 'base%02X' "$i")
+          c="''${c//"{{$key_lower}}"/#''${hex}}"
+          c="''${c//"{{$key_upper}}"/#''${hex}}"
+          c="''${c//"{{x$key_lower}}"/''${hex}}"
+          c="''${c//"{{x$key_upper}}"/''${hex}}"
         done
         echo "$c"
       }
