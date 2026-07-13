@@ -12,8 +12,7 @@
 @define-color yellow #f9e2af;
 @define-color green #a6e3a1;
 @define-color cyan #94e2d5;
-/* Accent imported from writable runtime CSS file (wallpaper script updates it) */
-@import url("file:///home/gc/.config/catppuccin/waybar-accent.css");
+@define-color accent #89b4fa;
 @define-color purple #cba6f7;
 
 * {
