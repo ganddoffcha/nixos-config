@@ -21,6 +21,28 @@
   home-manager.backupFileExtension = "backup";
 
   # ═══════════════════════════════════════════════════════════════════════
+  # CONSOLE — Catppuccin Mocha TTY colors
+  # ═══════════════════════════════════════════════════════════════════════
+  console.colors = [
+    "1e1e2e"  # 0  black        (Base)
+    "f38ba8"  # 1  red          (Red)
+    "a6e3a1"  # 2  green        (Green)
+    "f9e2af"  # 3  yellow       (Yellow)
+    "89b4fa"  # 4  blue         (Blue)
+    "cba6f7"  # 5  magenta      (Mauve)
+    "94e2d5"  # 6  cyan         (Teal)
+    "cdd6f4"  # 7  white        (Text)
+    "45475a"  # 8  bright black (Surface1)
+    "f2cdcd"  # 9  bright red   (Flamingo)
+    "a6e3a1"  # 10 bright green (Green)
+    "fab387"  # 11 bright yellow(Peach)
+    "74c7ec"  # 12 bright blue  (Sapphire)
+    "f5c2e7"  # 13 bright magent(Pink)
+    "89dceb"  # 14 bright cyan  (Sky)
+    "b4befe"  # 15 bright white (Lavender)
+  ];
+
+  # ═══════════════════════════════════════════════════════════════════════
   # BOOT
   # ═══════════════════════════════════════════════════════════════════════
   boot.loader.systemd-boot.enable = true;
