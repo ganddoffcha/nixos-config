@@ -366,6 +366,9 @@
     TEXMFHOME = "${config.xdg.dataHome}/texmf";
     TEXMFVAR = "${config.xdg.cacheHome}/texlive/texmf-var";
     TEXMFCONFIG = "${config.xdg.configHome}/texlive/texmf-config";
+    # Search ~/Documents/texnow/ recursively for leopard.sty etc.
+    # The trailing // enables kpathsea recursive subdirectory search.
+    TEXINPUTS = "${config.home.homeDirectory}/Documents/texnow//:";
     # bemenu — Catppuccin Mocha colours
     # tb/tf=bg/fg, nb/nf=normal, hb/hf=highlight, sb/sf=selected, scb/scf=scrollbar
     # -W 1.0 = full width (matching waybar). --fn + -H match waybar height.

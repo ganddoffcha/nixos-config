@@ -1,22 +1,74 @@
 #!/bin/sh
 # texnow — create a new LaTeX project from template and open in nvim.
-# Usage: texnow [name]
+# Usage: texnow [name] [-h|--help] [--standalone]
 #
-# Creates ~/Documents/texnow/<name>/ with leopard.sty and template.tex,
+# Creates ~/Documents/texnow/<name>/ with template.tex and .gitignore,
 # then opens the .tex file in nvim.  If no name is given, a timestamp
 # is used (YYYYMMDDHHMMSS).
+#
+# leopard.sty is NOT copied — it is found via TEXINPUTS pointing to
+# the canonical copy at ~/Documents/texnow/leopard.sty.
+# Use --standalone to copy leopard.sty for portable projects.
 
-if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
-    sed -n '2,8p' "$0" | sed 's/^# //; s/^#$//'
-    exit 0
+set -eu
+
+TEXNOW_DIR="${HOME}/Documents/texnow"
+standalone=false
+
+# --- Parse flags ---
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            sed -n '2,11p' "$0" | sed 's/^# //; s/^#$//'
+            exit 0
+            ;;
+        --standalone)
+            standalone=true
+            shift
+            ;;
+        --*)
+            echo "texnow: unknown flag: $1" >&2
+            exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# --- Resolve project name ---
+file="$(date +%Y%m%d%H%M%S)"
+[ -n "${1:-}" ] && file="$1"
+
+# --- Validate TEXNOW_DIR ---
+if [ ! -d "$TEXNOW_DIR" ]; then
+    echo "texnow: $TEXNOW_DIR does not exist — run: mkdir -p $TEXNOW_DIR" >&2
+    exit 1
 fi
 
-file="$(date +%Y%m%d%H%M%S)"
+for needed in template.tex .gitignore leopard.sty; do
+    if [ ! -f "$TEXNOW_DIR/$needed" ]; then
+        echo "texnow: $TEXNOW_DIR/$needed not found" >&2
+        exit 1
+    fi
+done
 
-[ -n "$1" ] && file="$1"
+# --- Create project directory ---
+proj_dir="$TEXNOW_DIR/$file"
+if [ -d "$proj_dir" ]; then
+    echo "texnow: $proj_dir already exists" >&2
+    exit 1
+fi
 
-mkdir ~/Documents/texnow/"$file"
-cd ~/Documents/texnow/$file
-cp ../leopard.sty .
-cp ../template.tex ./"$file".tex
-nvim "$file".tex
+mkdir "$proj_dir"
+
+# --- Copy template files ---
+cp "$TEXNOW_DIR/template.tex" "$proj_dir/$file.tex"
+cp "$TEXNOW_DIR/.gitignore" "$proj_dir/.gitignore"
+
+if $standalone; then
+    cp "$TEXNOW_DIR/leopard.sty" "$proj_dir/"
+fi
+
+# --- Open in nvim ---
+exec nvim "$proj_dir/$file.tex"
