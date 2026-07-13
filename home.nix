@@ -136,7 +136,7 @@ in {
     gimp3
     imagemagick
     # ── Documents ───────────────────────────────────────────────────────
-    texlive.combined.scheme-full
+    texliveFull
     zathura
 
     # ── Music ───────────────────────────────────────────────────────────
