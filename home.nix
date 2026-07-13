@@ -174,9 +174,10 @@
     defaultFonts = {
       sansSerif = [ "Google Sans" "Shanggu Sans" ];
       serif = [ "Shanggu Serif" ];
-      # JetBrains Mono fills math/unicode glyphs missing from Google Sans Mono
-      # (fixes vimtex conceal showing blank cells for α,β,∈,⊆,ℝ,→ etc.)
-      monospace = [ "Google Sans Mono" "JetBrains Mono" "Shanggu Mono" ];
+      # JetBrains Mono fills common math glyphs (α,β,∈,⊆,ℝ,→).
+      # Noto Sans Math fills Mathematical Alphanumeric Symbols (𝒪, 𝔹, ℕ etc.)
+      # that vimtex conceal uses for \mathcal, \mathbb, \mathfrak, etc.
+      monospace = [ "Google Sans Mono" "JetBrains Mono" "Noto Sans Math" "Shanggu Mono" ];
       emoji     = [ "Noto Color Emoji" ];
     };
   };
