@@ -11,6 +11,7 @@ vim.opt.showmode = false
 vim.opt.ruler = false
 vim.opt.laststatus = 0
 vim.opt.showcmd = false
+vim.opt.cmdheight = 0
 vim.opt.encoding = "utf-8"
 vim.opt.number = true
 vim.opt.relativenumber = true
