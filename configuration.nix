@@ -74,6 +74,8 @@
     "quiet"
     "loglevel=3"
     "nowatchdog"
+    "mitigations=off"
+    "split_lock_detect=off"
     "i8042.reset=1"
     "i8042.kbdreset=1"
     "atkbd.reset=1"
@@ -312,6 +314,20 @@
 
   # nvidia-powerd (1.169s on critical path) — only needed after login
   systemd.services.nvidia-powerd = {
+    after = lib.mkForce [ "multi-user.target" ];
+    wantedBy = lib.mkForce [ "multi-user.target" ];
+  };
+
+  # asusd (1.199s on critical path) — fan curves, anime matrix, charge limits.
+  # BIOS defaults are fine for the first 3s of graphical session.
+  # WantedBy=graphical.target so it starts AFTER login (avoids cycle).
+  systemd.services.asusd = {
+    after = lib.mkForce [ "graphical.target" ];
+    wantedBy = lib.mkForce [ "graphical.target" ];
+  };
+
+  # home-manager-gc (718ms on critical path) — garbage collection can wait.
+  systemd.services.home-manager-gc = {
     after = lib.mkForce [ "multi-user.target" ];
     wantedBy = lib.mkForce [ "multi-user.target" ];
   };
