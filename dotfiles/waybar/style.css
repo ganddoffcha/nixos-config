@@ -1,4 +1,4 @@
-/* Catppuccin Mocha */
+/* Catppuccin Mocha — accent substituted at build time */
 @define-color base0 #1e1e2e;
 @define-color base1 #313244;
 @define-color base2 #45475a;
@@ -12,7 +12,7 @@
 @define-color yellow #f9e2af;
 @define-color green #a6e3a1;
 @define-color cyan #94e2d5;
-@define-color blue #89b4fa;
+@define-color accent #{{accent}};
 @define-color purple #cba6f7;
 
 * {
@@ -39,7 +39,7 @@ button {
 
 button:hover {
     background: inherit;
-    box-shadow: inset 0 -3px @blue;
+    box-shadow: inset 0 -3px @accent;
 }
 
 #workspaces button {
@@ -54,7 +54,7 @@ button:hover {
 
 #workspaces button.active {
     background: alpha(@base2, 0);
-    box-shadow: inset 0 -3px @blue;
+    box-shadow: inset 0 -3px @accent;
 }
 
 #workspaces button.urgent {
@@ -63,7 +63,7 @@ button:hover {
 
 #mode {
     background-color: @base3;
-    box-shadow: inset 0 -3px @blue;
+    box-shadow: inset 0 -3px @accent;
 }
 
 #clock,

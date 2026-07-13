@@ -1,6 +1,30 @@
 { config, lib, pkgs, ... }:
 
-{
+let
+  # Read accent from dotfiles/current-accent (written by wallpaper script)
+  accentName = builtins.replaceStrings ["\n"] [""]
+    (builtins.readFile ./dotfiles/current-accent);
+  # Catppuccin Mocha accent hex values (13 accents)
+  accentHex = {
+    rosewater = "f5e0dc";
+    flamingo  = "f2cdcd";
+    pink      = "f5c2e7";
+    mauve     = "cba6f7";
+    red       = "f38ba8";
+    maroon    = "eba0ac";
+    peach     = "fab387";
+    yellow    = "f9e2af";
+    green     = "a6e3a1";
+    teal      = "94e2d5";
+    sky       = "89dceb";
+    sapphire  = "74c7ec";
+    blue      = "89b4fa";
+    lavender  = "b4befe";
+  };
+  currentAccent = accentHex.${accentName} or "89b4fa";
+  # Build-time template substitution for {{accent}} placeholder
+  subAccent = builtins.replaceStrings ["{{accent}}"] [currentAccent];
+in {
   # Allow unfree packages (vscode, spotify, etc.)
   nixpkgs.config.allowUnfree = true;
 
@@ -16,7 +40,7 @@
     enable = true;
     autoEnable = true;
     flavor = "mocha";
-    accent = "blue";
+    accent = accentName;
     cache.enable = true;
   };
 
@@ -377,7 +401,7 @@
   # Multi-theme runtime switching has been removed in favour of catppuccin/nix.
 
   # ── Hyprland ──────────────────────────────────────────────────────────
-  xdg.configFile."hypr/hyprland.conf".source = ./dotfiles/hypr/hyprland.conf;
+  xdg.configFile."hypr/hyprland.conf".text = subAccent (builtins.readFile ./dotfiles/hypr/hyprland.conf);
   xdg.configFile."hypr/hypridle.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
@@ -425,7 +449,7 @@
 
   # ── Waybar ────────────────────────────────────────────────────────────
   xdg.configFile."waybar/config.jsonc".source = ./dotfiles/waybar/config.jsonc;
-  xdg.configFile."waybar/style.css".source = ./dotfiles/waybar/style.css;
+  xdg.configFile."waybar/style.css".text = subAccent (builtins.readFile ./dotfiles/waybar/style.css);
 
   # ── Terminal ──────────────────────────────────────────────────────────
   xdg.configFile."kitty/kitty.conf".source = ./dotfiles/kitty/kitty.conf;

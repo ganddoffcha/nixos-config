@@ -1,16 +1,76 @@
 #!/usr/bin/env bash
-# Wallpaper setter — sets wallpaper via hyprpaper.
-# Theme matching has been removed (system uses Catppuccin Mocha exclusively).
+# Wallpaper setter with automatic Catppuccin accent detection.
+# Sets wallpaper via hyprpaper, detects the best Catppuccin Mocha accent
+# from dominant colours, writes it to dotfiles/current-accent, then
+# triggers a rebuild so the accent is applied system-wide.
 #
 #   wallpaper                list available wallpapers
 #   wallpaper -p <image>     preview wallpaper dominant colours
-#   wallpaper <image>        set wallpaper
+#   wallpaper <image>        set wallpaper + auto-detect accent + rebuild
+#   wallpaper -a <image>     set wallpaper + auto-detect accent (no rebuild)
 #   wallpaper -h             show this help
 
 set -e
 
 WALLPAPER_DIR="$HOME/dotfiles/wallpapers"
 HYPRPAPER_CONF="$HOME/.config/hypr/hyprpaper.conf"
+ACCENT_FILE="$HOME/dotfiles/current-accent"
+REBUILD_SCRIPT="$HOME/scripts/rebuild"
+
+# Catppuccin Mocha 13 accent colours (hex without #)
+declare -A ACCENTS=(
+    [rosewater]=f5e0dc  [flamingo]=f2cdcd  [pink]=f5c2e7
+    [mauve]=cba6f7      [red]=f38ba8       [maroon]=eba0ac
+    [peach]=fab387      [yellow]=f9e2af    [green]=a6e3a1
+    [teal]=94e2d5       [sky]=89dceb       [sapphire]=74c7ec
+    [blue]=89b4fa       [lavender]=b4befe
+)
+
+# ── Extract dominant colours from an image ──────────────────────────────
+# Uses ImageMagick to quantize and output a colour histogram.
+extract_colors() {
+    local image="$1" n="${2:-8}"
+    local img="$WALLPAPER_DIR/$image"
+    [ -f "$img" ] || img="$image"
+    magick "$img" -resize 200x200 -colors 16 -quantize RGB \
+        -format "%c" histogram:info:- 2>/dev/null |
+        sort -rn | head -n "$n" |
+        sed -n 's/.*#\([0-9A-Fa-f]\{6,12\}\).*/\1/p' |
+        while read -r hex; do
+            echo "${hex:0:6}"
+        done
+}
+
+# ── RGB colour distance (Euclidean, weighted for human perception) ──────
+color_dist() {
+    local r1=$((16#${1:0:2})) g1=$((16#${1:2:2})) b1=$((16#${1:4:2}))
+    local r2=$((16#${2:0:2})) g2=$((16#${2:2:2})) b2=$((16#${2:4:2}))
+    local dr=$(( (r1 - r2) * 3 )) dg=$(( (g1 - g2) * 4 )) db=$(( (b1 - b2) * 2 ))
+    echo $(( dr*dr + dg*dg + db*db ))
+}
+
+# ── Find best Catppuccin accent for a wallpaper ────────────────────────
+best_accent() {
+    local image="$1"
+    local -a dominant
+    while IFS= read -r hex; do dominant+=("$hex"); done < <(extract_colors "$image" 6)
+
+    local best_name="" best_score=99999999
+    for name in "${!ACCENTS[@]}"; do
+        local accent_hex="${ACCENTS[$name]}"
+        local total=0
+        for dc in "${dominant[@]}"; do
+            local d; d=$(color_dist "$dc" "$accent_hex")
+            total=$(( total + d ))
+        done
+        echo "  $name: $total" >&2
+        if [ "$total" -lt "$best_score" ]; then
+            best_score=$total
+            best_name=$name
+        fi
+    done
+    echo "$best_name"
+}
 
 # ── Set wallpaper via hyprpaper ─────────────────────────────────────────
 set_wallpaper() {
@@ -18,14 +78,12 @@ set_wallpaper() {
     local path="$WALLPAPER_DIR/$image"
     [ -f "$path" ] || { echo "Wallpaper not found: $path" >&2; return 1; }
 
-    # Update hyprpaper config
     mkdir -p "$(dirname "$HYPRPAPER_CONF")"
     cat > "$HYPRPAPER_CONF" <<EOF
 preload = $path
 wallpaper = ,$path
 EOF
 
-    # Reload hyprpaper
     systemctl --user restart hyprpaper.service 2>/dev/null || true
     echo "Wallpaper: $image"
 }
@@ -44,14 +102,10 @@ preview_wallpaper() {
 
     echo "Wallpaper: $image"
     echo "─────────────────────────────"
-    magick "$path" -resize 200x200 -colors 16 -quantize RGB \
-        -format "%c" histogram:info:- 2>/dev/null |
-        sort -rn | head -n 8 |
-        sed -n 's/.*#\([0-9A-Fa-f]\{6,12\}\).*/\1/p' |
-        while read -r hex; do
-            printf "\033[48;2;%d;%d;%dm     \033[0m #%s\n" \
-                "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}" "${hex:0:6}"
-        done
+    extract_colors "$path" 8 | while read -r hex; do
+        printf "\033[48;2;%d;%d;%dm     \033[0m #%s\n" \
+            "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}" "$hex"
+    done
     echo "─────────────────────────────"
 }
 
@@ -61,10 +115,13 @@ case "${1:-}" in
         echo "Usage: wallpaper [option] [<image>]"
         echo ""
         echo "  wallpaper               list available wallpapers"
-        echo "  wallpaper <image>       set wallpaper"
+        echo "  wallpaper <image>       set wallpaper, auto-detect accent, rebuild"
+        echo "  wallpaper -a <image>    set wallpaper + auto-detect accent (no rebuild)"
         echo "  wallpaper -l            list available wallpapers"
         echo "  wallpaper -p <image>    preview dominant colours"
         echo "  wallpaper -h            show this help"
+        echo ""
+        echo "Accent is written to dotfiles/current-accent and applied at next rebuild."
         exit 0
         ;;
     -l|--list)
@@ -73,10 +130,33 @@ case "${1:-}" in
     -p|--preview)
         preview_wallpaper "${2:?usage: wallpaper -p <image>}"
         ;;
+    -a|--accent-only)
+        image="${2:?usage: wallpaper -a <image>}"
+        set_wallpaper "$image"
+        echo "Detecting best Catppuccin accent..."
+        accent=$(best_accent "$image")
+        echo "Best accent: $accent"
+        echo -n "$accent" > "$ACCENT_FILE"
+        echo "Accent written to $ACCENT_FILE. Run 'rebuild' to apply."
+        ;;
     "")
         list_wallpapers
         ;;
     *)
-        set_wallpaper "$1"
+        image="$1"
+        set_wallpaper "$image"
+        echo "Detecting best Catppuccin accent..."
+        accent=$(best_accent "$image")
+        echo "Best accent: $accent"
+        echo -n "$accent" > "$ACCENT_FILE"
+
+        # Trigger rebuild so the accent takes effect system-wide
+        if [ -x "$REBUILD_SCRIPT" ]; then
+            echo ""
+            echo "Rebuilding to apply '$accent' accent..."
+            exec "$REBUILD_SCRIPT" -m "wallpaper: $image → accent $accent"
+        else
+            echo "Accent written. Run 'rebuild' to apply."
+        fi
         ;;
 esac
