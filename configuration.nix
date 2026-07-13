@@ -41,6 +41,7 @@
     "89dceb"  # 14 bright cyan  (Sky)
     "b4befe"  # 15 bright white (Lavender)
   ];
+  console.font = "${pkgs.terminus_font}/share/consolefonts/ter-u32n.psf.gz";
 
   # ═══════════════════════════════════════════════════════════════════════
   # BOOT
