@@ -1,5 +1,8 @@
 # Catppuccin Mocha — 16 distinct ANSI colors
 background-opacity = 0.67
+# JetBrains Mono has full math Unicode coverage (fixes vimtex conceal).
+# Ghostty doesn't respect fontconfig fallback chains — must be explicit.
+font-family = "JetBrains Mono"
 font-size = 12
 background = #1e1e2e
 foreground = #cdd6f4
