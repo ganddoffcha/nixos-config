@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -9,7 +9,12 @@
   # ═══════════════════════════════════════════════════════════════════════
   # HOME MANAGER — user config lives in home.nix
   # ═══════════════════════════════════════════════════════════════════════
-  home-manager.users.gc = import ./home.nix;
+  home-manager.users.gc = {
+    imports = [
+      ./home.nix
+      inputs.catppuccin.homeModules.catppuccin
+    ];
+  };
   home-manager.backupFileExtension = "backup";
 
   # ═══════════════════════════════════════════════════════════════════════
@@ -263,26 +268,4 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   system.stateVersion = "24.11";
-
-  # ═══════════════════════════════════════════════════════════════════════
-  # STYLIX — system-wide theming (targets configured in home.nix)
-  # Theme name read from dotfiles/current-theme; change it and rebuild
-  # to switch themes.  Run `theme` from bemenu/terminal to pick one.
-  # ═══════════════════════════════════════════════════════════════════════
-  stylix = let
-    themeName = builtins.replaceStrings ["\n"] [""]
-      (builtins.readFile ./dotfiles/current-theme);
-  in {
-    enable = true;
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/${themeName}.yaml";
-    polarity = "dark";
-    fonts = {
-      sizes = {
-        applications = 10;
-        desktop = 10;
-        popups = 10;
-        terminal = 12;
-      };
-    };
-  };
 }

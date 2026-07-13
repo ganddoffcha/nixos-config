@@ -1,19 +1,19 @@
-/* Stylix dynamic — placeholders replaced by home.nix */
-@define-color base0 {{base00}};
-@define-color base1 {{base01}};
-@define-color base2 {{base02}};
-@define-color base3 {{base03}};
-@define-color base4 {{base04}};
-@define-color base5 {{base05}};
-@define-color base6 {{base06}};
-@define-color base7 {{base07}};
-@define-color red {{base08}};
-@define-color orange {{base09}};
-@define-color yellow {{base0A}};
-@define-color green {{base0B}};
-@define-color cyan {{base0C}};
-@define-color blue {{base0D}};
-@define-color purple {{base0E}};
+/* Catppuccin Mocha */
+@define-color base0 #1e1e2e;
+@define-color base1 #313244;
+@define-color base2 #45475a;
+@define-color base3 #6c7086;
+@define-color base4 #a6adc8;
+@define-color base5 #cdd6f4;
+@define-color base6 #f5e0dc;
+@define-color base7 #b4befe;
+@define-color red #f38ba8;
+@define-color orange #fab387;
+@define-color yellow #f9e2af;
+@define-color green #a6e3a1;
+@define-color cyan #94e2d5;
+@define-color blue #89b4fa;
+@define-color purple #cba6f7;
 
 * {
     font-family: Google Sans;

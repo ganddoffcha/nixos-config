@@ -1,18 +1,18 @@
-# Stylix dynamic — placeholders replaced by home.nix
+# Catppuccin Mocha
 [status]
 separator_open  = "["
 separator_close = "]"
-separator_style = { fg = "{{base03}}" }
+separator_style = { fg = "#6c7086" }
 
 [manager]
-cwd = { fg = "{{base0D}}" }
+cwd = { fg = "#89b4fa" }
 
 [filetype]
 rules = [
-	{ mime = "image/*", fg = "{{base0C}}" },
-	{ mime = "video/*", fg = "{{base09}}" },
-	{ mime = "audio/*", fg = "{{base0E}}" },
-	{ mime = "application/zip", fg = "{{base0A}}" },
-	{ mime = "application/gzip", fg = "{{base0A}}" },
-	{ mime = "application/x-tar", fg = "{{base0A}}" },
+	{ mime = "image/*", fg = "#94e2d5" },
+	{ mime = "video/*", fg = "#fab387" },
+	{ mime = "audio/*", fg = "#cba6f7" },
+	{ mime = "application/zip", fg = "#f9e2af" },
+	{ mime = "application/gzip", fg = "#f9e2af" },
+	{ mime = "application/x-tar", fg = "#f9e2af" },
 ]

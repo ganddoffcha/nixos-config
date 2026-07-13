@@ -1,11 +1,6 @@
 { config, lib, pkgs, ... }:
 
-let
-  # Stylix colour palette — used for BEMENU_OPTS and home-manager activation.
-  # Note: app config colours are now handled imperatively at runtime by
-  # ~/scripts/theme for instant switching without nixos-rebuild.
-  palette = config.lib.stylix.colors.withHashtag;
-in {
+{
   # Allow unfree packages (vscode, spotify, etc.)
   nixpkgs.config.allowUnfree = true;
 
@@ -13,6 +8,17 @@ in {
   home.homeDirectory = "/home/gc";
   home.stateVersion = "25.05";
   home.enableNixpkgsReleaseCheck = false;
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # CATPPUCCIN — system-wide theming via catppuccin/nix
+  # ═══════════════════════════════════════════════════════════════════════
+  catppuccin = {
+    enable = true;
+    autoEnable = true;
+    flavor = "mocha";
+    accent = "blue";
+    cache.enable = true;
+  };
 
   # ═══════════════════════════════════════════════════════════════════════
   # PACKAGES — user-facing applications & tools
@@ -111,8 +117,9 @@ in {
     zathura
 
     # ── Music ───────────────────────────────────────────────────────────
-    musescore
-    muse-sounds-manager
+    # musescore  # FIXME: broken in nixpkgs-unstable as of 2026-07-13
+    #   makeCWrapper regression: --prefix/--set/--set-default are unknown args
+    # muse-sounds-manager  # depends on broken musescore
 
     # ── Network ─────────────────────────────────────────────────────────
     speedtest-cli
@@ -145,20 +152,11 @@ in {
   # CURSOR — managed declaratively instead of manual ~/.local/share/icons
   # ═══════════════════════════════════════════════════════════════════════
   home.pointerCursor = {
+    enable = true;
     name = "Bibata-Modern-Classic";
     package = pkgs.bibata-cursors;
     size = 24;
     gtk.enable = true;
-  };
-
-  # ═══════════════════════════════════════════════════════════════════════
-  # STYLIX TARGETS — apply Catppuccin Mocha to apps with native HM modules
-  # (hyprland, waybar, kitty, ghostty, bemenu, mako themed manually via
-  #  dotfiles — see ./dotfiles/<app>/)
-  # ═══════════════════════════════════════════════════════════════════════
-  stylix.targets = {
-    gtk.enable = true;
-    starship.enable = true;
   };
 
   # ═══════════════════════════════════════════════════════════════════════
@@ -207,7 +205,6 @@ in {
       delta.navigate = true;
       delta.side-by-side = true;
       delta.line-numbers = true;
-      delta.syntax-theme = "catppuccin-mocha";
       interactive.diffFilter = "delta --color-only";
     };
   };
@@ -304,6 +301,17 @@ in {
   };
 
   # ═══════════════════════════════════════════════════════════════════════
+  # GTK — themed by catppuccin/nix module
+  # ═══════════════════════════════════════════════════════════════════════
+  gtk = {
+    enable = true;
+    font = {
+      name = "Google Sans";
+      size = 10;
+    };
+  };
+
+  # ═══════════════════════════════════════════════════════════════════════
   # ENVIRONMENT
   # ═══════════════════════════════════════════════════════════════════════
   home.sessionPath = [
@@ -346,11 +354,10 @@ in {
     TEXMFHOME = "${config.xdg.dataHome}/texmf";
     TEXMFVAR = "${config.xdg.cacheHome}/texlive/texmf-var";
     TEXMFCONFIG = "${config.xdg.configHome}/texlive/texmf-config";
-    # bemenu launcher colours (dynamic — follows current theme at login).
-    # Runtime theme changes are handled by ~/scripts/theme which writes
-    # ~/.config/bemenu/env and the bemenu/bemenu-run wrappers which source it.
+    # bemenu — Catppuccin Mocha colours
+    # tb/tf=bg/fg, nb/nf=normal, hb/hf=highlight, sb/sf=selected, scb/scf=scrollbar
     # -W 1.0 = full width (matching waybar). --fn + -H match waybar height.
-    BEMENU_OPTS = "--tb=${palette.base01} --tf=${palette.base05} --fb=${palette.base01} --ff=${palette.base05} --nb=${palette.base01} --nf=${palette.base05} --hb=${palette.base03} --hf=${palette.base0A} --sb=${palette.base03} --sf=${palette.base0B} --scb=${palette.base00} --scf=${palette.base03} -W 1.0 --fn 'Google Sans 10' -H 22 -B 0";
+    BEMENU_OPTS = "--tb=#313244 --tf=#cdd6f4 --fb=#313244 --ff=#cdd6f4 --nb=#313244 --nf=#cdd6f4 --hb=#6c7086 --hf=#f9e2af --sb=#6c7086 --sf=#a6e3a1 --scb=#1e1e2e --scf=#6c7086 -W 1.0 --fn 'Google Sans 10' -H 22 -B 0";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
@@ -364,17 +371,13 @@ in {
   xdg.configFile."zsh/.zprofile".source = ./dotfiles/zsh/.zprofile;
 
   # ═══════════════════════════════════════════════════════════════════════
-  # DOTFILES — declaratively managed config files
+  # DOTFILES — declaratively managed config files (Nix store symlinks)
   # ═══════════════════════════════════════════════════════════════════════
-  # Each entry symlinks a file from ./dotfiles/ into ~/.config/ or ~/.
-  # On a new machine, just clone the dotfiles repo and rebuild.
-  #
-  # Config files with {{base00}}…{{base0F}} placeholders are NOT managed
-  # by home-manager — they're generated at runtime by ~/scripts/theme
-  # for instant theme switching without nixos-rebuild.
+  # Colours are hardcoded for Catppuccin Mocha (no more base16 placeholders).
+  # Multi-theme runtime switching has been removed in favour of catppuccin/nix.
 
   # ── Hyprland ──────────────────────────────────────────────────────────
-  # hyprland.conf — themed at runtime by ~/scripts/theme (imperative colours)
+  xdg.configFile."hypr/hyprland.conf".source = ./dotfiles/hypr/hyprland.conf;
   xdg.configFile."hypr/hypridle.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
@@ -419,18 +422,17 @@ in {
     }
   '';
   xdg.configFile."hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;
-  # hyprpaper.conf — managed at runtime by ~/scripts/wallpaper (wallpaper paths change)
-
-  # ── Notifications ─────────────────────────────────────────────────────
-  # mako/config — themed at runtime by ~/scripts/theme (imperative colours)
 
   # ── Waybar ────────────────────────────────────────────────────────────
   xdg.configFile."waybar/config.jsonc".source = ./dotfiles/waybar/config.jsonc;
-  # waybar/style.css — themed at runtime by ~/scripts/theme (imperative colours)
+  xdg.configFile."waybar/style.css".source = ./dotfiles/waybar/style.css;
 
   # ── Terminal ──────────────────────────────────────────────────────────
-  # ghostty/config — themed at runtime by ~/scripts/theme (imperative colours)
-  # kitty/kitty.conf — themed at runtime by ~/scripts/theme (imperative colours)
+  xdg.configFile."kitty/kitty.conf".source = ./dotfiles/kitty/kitty.conf;
+  xdg.configFile."ghostty/config".source = ./dotfiles/ghostty/config;
+
+  # ── Notifications ─────────────────────────────────────────────────────
+  xdg.configFile."mako/config".source = ./dotfiles/mako/config;
 
   # ── LaTeX ─────────────────────────────────────────────────────────────
   xdg.configFile."latexmk/latexmkrc".source = ./dotfiles/latexmk/latexmkrc;
@@ -439,10 +441,9 @@ in {
   xdg.configFile."gammastep/config.ini".source = ./dotfiles/gammastep/config.ini;
 
   # ── Workspace root files ──────────────────────────────────────────────
-  # .clinerules, memory-strategy.md, SYSTEM.md are now real files in ~/
-  # (not home-manager symlinks) — same reason as VSCode settings:
-  # Nix store symlinks break on garbage collection and are read-only.
-  # Source copies live in dotfiles/ for version control.
+  # .clinerules, memory-strategy.md, SYSTEM.md are real files in ~/
+  # (not home-manager symlinks) — Nix store symlinks are read-only
+  # and break on garbage collection.  Source copies in dotfiles/ for VC.
 
   # ── Scripts ───────────────────────────────────────────────────────────
   home.file."scripts/compiler".source = ./dotfiles/scripts/compiler;
@@ -480,10 +481,10 @@ in {
   xdg.configFile."nvim/lua/user/keymaps.lua".source = ./dotfiles/nvim/lua/user/keymaps.lua;
   xdg.configFile."nvim/lua/user/autocmds.lua".source = ./dotfiles/nvim/lua/user/autocmds.lua;
   xdg.configFile."nvim/lua/user/plugins.lua".source = ./dotfiles/nvim/lua/user/plugins.lua;
-  # nvim/colors/base16-stylix.vim — themed at runtime by ~/scripts/theme (imperative colours)
+  xdg.configFile."nvim/colors/base16-stylix.vim".source = ./dotfiles/nvim/colors/base16-stylix.vim;
   xdg.configFile."qutebrowser/config.py".source = ./dotfiles/qutebrowser/config.py;
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
-  # yazi/theme.toml — themed at runtime by ~/scripts/theme (imperative colours)
+  xdg.configFile."yazi/theme.toml".source = ./dotfiles/yazi/theme.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
 
@@ -620,6 +621,7 @@ in {
   # POST-REBUILD — run auto-refresh after home-manager activation so
   # the monitor mode is corrected immediately (Hyprland config reloads
   # during rebuild can reset it to the wrong refresh rate).
+  # Also bootstrap hypridle-active.conf on first install.
   # ═══════════════════════════════════════════════════════════════════════
   home.activation = lib.mkAfter {
     autoRefresh = ''
@@ -627,86 +629,21 @@ in {
         "$HOME/scripts/auto-refresh.sh" || true
       fi
     '';
-    # Cache the base16-schemes path so the theme preview script is instant
-    cacheBase16Path = ''
-      mkdir -p "$HOME/.cache"
-      echo "${pkgs.base16-schemes}/share/themes" > "$HOME/.cache/base16-themes-path"
-    '';
-    # Generate themed configs on activation (first install / rebuild).
-    # Inline logic avoids chicken-and-egg: ~/scripts/theme symlink isn't
-    # updated yet during activation, so we can't call it directly.
-    generateThemedConfigs = ''
-      THEME_FILE="$HOME/dotfiles/current-theme"
-      THEME=$(${pkgs.coreutils}/bin/cat "$THEME_FILE" 2>/dev/null || echo "google-dark")
-      YAML="${pkgs.base16-schemes}/share/themes/$THEME.yaml"
-      if [ ! -f "$YAML" ]; then
-        echo "theme: '$THEME' not found, skipping config generation" >&2
-        exit 0
-      fi
-      # Parse base16 YAML → 16 hex colours
-      ${pkgs.python3}/bin/python3 -c '
-import sys, re
-with open("'"$YAML"'") as f:
-    text = f.read()
-for i in range(16):
-    m = re.search(r"(?i)^\s*base%02x:\s*\"?#?([0-9a-fA-F]{6})\"?" % i, text, re.MULTILINE)
-    print(m.group(1) if m else "ffffff")
-' > /tmp/theme-colors.txt
-      # Read colours into array
-      colors=()
-      while IFS= read -r hex; do colors+=("$hex"); done < /tmp/theme-colors.txt
-      rm -f /tmp/theme-colors.txt
-      if [ ''${#colors[@]} -ne 16 ]; then
-        echo "theme: failed to parse colours from $YAML" >&2
-        exit 0
-      fi
-      # Substitute and write configs
-      sub() {
-        local c="$1"
-        for i in $(seq 0 15); do
-          local hex="''${colors[$i]}"
-          local key_lower; key_lower=$(printf 'base%02x' "$i")
-          local key_upper; key_upper=$(printf 'base%02X' "$i")
-          c="''${c//"{{$key_lower}}"/#''${hex}}"
-          c="''${c//"{{$key_upper}}"/#''${hex}}"
-          c="''${c//"{{x$key_lower}}"/''${hex}}"
-          c="''${c//"{{x$key_upper}}"/''${hex}}"
-        done
-        echo "$c"
-      }
-      write_config() {
-        local src="$1" dst="$2"
-        mkdir -p "$(dirname "$dst")"
-        sub "$(${pkgs.coreutils}/bin/cat "$src")" > "$dst"
-      }
-      # Remove old Nix store symlinks first (they're read-only).
-      # Atomic writes: .tmp then mv prevents the file-ever-missing gap
-      # that triggers Hyprland's autogenerated-config fallback.
-      atomic_write() {
-        local src="$1" dst="$2"
-        mkdir -p "$(dirname "$dst")"
-        sub "$(${pkgs.coreutils}/bin/cat "$src")" > "$dst.tmp"
-        mv "$dst.tmp" "$dst"
-      }
-      atomic_write "$HOME/dotfiles/hypr/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
-      atomic_write "$HOME/dotfiles/mako/config" "$HOME/.config/mako/config"
-      atomic_write "$HOME/dotfiles/waybar/style.css" "$HOME/.config/waybar/style.css"
-      atomic_write "$HOME/dotfiles/ghostty/config" "$HOME/.config/ghostty/config"
-      atomic_write "$HOME/dotfiles/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
-      atomic_write "$HOME/dotfiles/nvim/colors/base16-stylix.vim" "$HOME/.config/nvim/colors/base16-stylix.vim"
-      atomic_write "$HOME/dotfiles/yazi/theme.toml" "$HOME/.config/yazi/theme.toml"
-      # Also generate bemenu env so wrappers pick up theme colours
-      mkdir -p "$HOME/.config/bemenu"
-      # Bootstrap hypridle-active.conf on first install / after rebuild
+    bootstrapHypridle = ''
       if [ ! -f "$HOME/.config/hypr/hypridle-active.conf" ]; then
         mkdir -p "$HOME/.config/hypr"
-        ${pkgs.coreutils}/bin/cp "$HOME/.config/hypr/hypridle.conf" "$HOME/.config/hypr/hypridle-active.conf"
+        cp "$HOME/.config/hypr/hypridle.conf" "$HOME/.config/hypr/hypridle-active.conf"
       fi
-      cat > "$HOME/.config/bemenu/env" <<BEMENU_EOF
+    '';
+    # Generate bemenu env on first install so wrappers have colours
+    # (theme script also writes this on theme switch, but activation covers
+    #  the initial install case).
+    bemenuEnv = ''
+      mkdir -p "$HOME/.config/bemenu"
+      cat > "$HOME/.config/bemenu/env" <<'BEMENU_EOF'
 # Generated by home-manager activation — do not edit
-BEMENU_OPTS="--tb=#''${colors[1]} --tf=#''${colors[5]} --fb=#''${colors[1]} --ff=#''${colors[5]} --nb=#''${colors[1]} --nf=#''${colors[5]} --hb=#''${colors[3]} --hf=#''${colors[10]} --sb=#''${colors[3]} --sf=#''${colors[11]} --scb=#''${colors[0]} --scf=#''${colors[3]} -W 1.0 --fn 'Google Sans 10' -H 22 -B 0"
+BEMENU_OPTS="--tb=#313244 --tf=#cdd6f4 --fb=#313244 --ff=#cdd6f4 --nb=#313244 --nf=#cdd6f4 --hb=#6c7086 --hf=#f9e2af --sb=#6c7086 --sf=#a6e3a1 --scb=#1e1e2e --scf=#6c7086 -W 1.0 --fn 'Google Sans 10' -H 22 -B 0"
 BEMENU_EOF
-      echo "theme: generated configs for '$THEME'"
     '';
   };
 
