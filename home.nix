@@ -53,6 +53,7 @@
     direnv
     dash
     jetbrains-mono
+    julia-mono
 
     # ── Modern CLI Tools ─────────────────────────────────────────────────
     scx.full
@@ -174,10 +175,9 @@
     defaultFonts = {
       sansSerif = [ "Google Sans" "Shanggu Sans" ];
       serif = [ "Shanggu Serif" ];
-      # JetBrains Mono fills common math glyphs (α,β,∈,⊆,ℝ,→).
-      # Noto Sans Math fills Mathematical Alphanumeric Symbols (𝒪, 𝔹, ℕ etc.)
-      # that vimtex conceal uses for \mathcal, \mathbb, \mathfrak, etc.
-      monospace = [ "Google Sans Mono" "JetBrains Mono" "Noto Sans Math" "Shanggu Mono" ];
+      # JuliaMono — scientific/math monospace font with full Unicode math.
+      # JetBrains Mono + Noto Sans Math are fallbacks.
+      monospace = [ "JuliaMono" "Google Sans Mono" "JetBrains Mono" "Noto Sans Math" "Shanggu Mono" ];
       emoji     = [ "Noto Color Emoji" ];
     };
   };
