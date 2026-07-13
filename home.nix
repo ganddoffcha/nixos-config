@@ -635,6 +635,21 @@
     };
   };
 
+  systemd.user.services.random-wallpaper = {
+    Unit = {
+      Description = "Set a random wallpaper at login";
+      After = [ "graphical-session.target" "hyprpaper.service" ];
+      Wants = [ "hyprpaper.service" ];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash %h/scripts/wallpaper -r";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
   # ═══════════════════════════════════════════════════════════════════════
   # POST-REBUILD — run auto-refresh after home-manager activation so
   # the monitor mode is corrected immediately (Hyprland config reloads

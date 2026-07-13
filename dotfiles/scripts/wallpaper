@@ -180,6 +180,7 @@ case "${1:-}" in
         echo ""
         echo "  wallpaper               list available wallpapers"
         echo "  wallpaper <image>       set wallpaper + auto-detect accent (live)"
+        echo "  wallpaper -r            pick a random wallpaper"
         echo "  wallpaper -l            list available wallpapers"
         echo "  wallpaper -p <image>    preview dominant colours + accent match"
         echo "  wallpaper -h            show this help"
@@ -192,6 +193,16 @@ case "${1:-}" in
         ;;
     -l|--list)
         list_wallpapers
+        ;;
+    -r|--random)
+        image=$(list_wallpapers | shuf -n1)
+        echo "Random wallpaper: $image"
+        set_wallpaper "$image"
+        echo -n "$image" > "$WALLPAPER_FILE"
+
+        echo "Detecting best Catppuccin accent..."
+        accent=$(best_accent "$image")
+        apply_accent "$accent"
         ;;
     -p|--preview)
         preview_wallpaper "${2:?usage: wallpaper -p <image>}"
