@@ -1,5 +1,12 @@
 # Catppuccin Mocha — 16 distinct ANSI colors
 background-opacity = 0.67
+# JetBrains Mono has full math Unicode — Ghostty's text shaper fails
+# entire lines on missing glyphs (unlike Kitty which shows per-glyph boxes).
+font-family = "JetBrains Mono"
+# JetBrains Mono for full math Unicode coverage — Ghostty renders missing
+# glyphs as blank cells instead of boxes, so vimtex conceal needs the font
+# to actually contain α,β,∈,⊆,ℝ,→, etc.
+font-family = "JetBrains Mono"
 font-size = 12
 background = #1e1e2e
 foreground = #cdd6f4
