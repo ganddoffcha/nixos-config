@@ -79,8 +79,10 @@
     "resume_offset=210616320"
   ];
 
-  # Kernel modules are auto-detected in hardware-configuration.nix
-  # (boot.initrd.availableKernelModules, boot.kernelModules)
+  # Kernel modules — only kvm-intel at boot.
+  # nvidia_uvm (and its dependency nvidia.ko) takes 35s to load at boot
+  # and is only needed for CUDA workloads — auto-loads on demand.
+  boot.kernelModules = lib.mkForce [ "kvm-intel" ];
 
   # ═══════════════════════════════════════════════════════════════════════
   # NETWORKING
