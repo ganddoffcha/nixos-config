@@ -16,48 +16,46 @@ Personal NixOS + [Home Manager](https://github.com/nix-community/home-manager) c
 
 - **Hyprland** — Wayland compositor with animations, blur, and gaps
 - **NVIDIA PRIME** — iGPU by default, NVIDIA for heavy workloads
-- **Stylix** — system-wide base16 theming (Catppuccin, Everforest, Nord, 20 curated themes)
-- **Instant theme switching** — `theme <name>` applies colours to all apps in 0.3s (no rebuild needed)
-- **Wallpaper auto-match** — `wallpaper <image>` picks the best-matching theme automatically
+- **Catppuccin Mocha** — system-wide theme via [catppuccin/nix](https://github.com/catppuccin/nix) (terminal, TTY, GTK, Starship, Delta, Brave)
+- **Imperative accent** — `wallpaper <image>` auto-detects best Catppuccin accent from image colours, applies live via `hyprctl`
 - **Instant power profiles** — 240Hz + eye candy on AC, 60Hz + minimal on battery (udev-driven)
 - **PCIe ASPM** — `performance` on AC, `powersupersave` on battery (kernel-level)
 - **Hibernation on lid-close** — suspend-to-disk via systemd-logind
 - **Declarative dotfiles** — configs in `dotfiles/`, managed by Home Manager
 - **bemenu** — wayland-native app launcher with dynamic theming
+- **LaTeX quick-start** — `texnow` creates a project in one command, `leopard.sty` provides 60+ macros, pdflatex-default with CJK toggle
 - **Auto-git** — `rebuild` script syncs → rebuilds → commits → pushes in one command
 - **POSIX shell** — `/bin/sh` is dash, all scripts are POSIX-clean
 
 ## Structure
 
 ```
-├── flake.nix             # Flake inputs & outputs (nixpkgs, home-manager, stylix, nixos-hardware)
+├── flake.nix             # Flake inputs & outputs (nixpkgs, home-manager, catppuccin, nixos-hardware)
 ├── flake.lock            # Pinned flake inputs
-├── configuration.nix     # NixOS system config (kernel, drivers, services, udev, stylix)
+├── configuration.nix     # NixOS system config (kernel, drivers, services, udev, catppuccin)
 ├── home.nix              # Home Manager user config (packages, dotfiles, systemd services)
 ├── hardware-configuration.nix  # Auto-generated — machine-specific
 ├── dotfiles/
 │   ├── hypr/             # Hyprland (WM), hypridle, hyprlock, hyprpaper
 │   ├── waybar/           # Status bar (config + CSS)
 │   ├── ghostty/          # Terminal emulator (GPU-accelerated)
-│   ├── kitty/            # Terminal emulator (fallback)
+│   ├── kitty/            # Terminal emulator (primary)
 │   ├── nvim/             # Neovim (lazy.nvim, vimtex, lean.nvim, lsp)
 │   ├── mako/             # Notification daemon
 │   ├── gammastep/        # Blue light filter
 │   ├── yazi/             # Terminal file manager
-│   ├── zathura/          # PDF viewer
+│   ├── zathura/          # PDF viewer (Catppuccin themed + dark-mode recolor)
 │   ├── mpv/              # Media player (vulkan, vaapi)
-│   ├── qutebrowser/      # Keyboard-driven browser
 │   ├── Code/             # VSCode keybindings & settings
 │   ├── scripts/          # Utility scripts (see below)
 │   ├── wallpapers/       # 12 wallpapers (picsum + personal)
-│   ├── fonts/            # Google Sans TTF files
-│   ├── curated-themes    # 20 hand-picked base16 themes
-│   ├── current-theme     # Active theme name (imperative, runtime-editable)
+│   ├── fonts/            # Google Sans + JuliaMono TTF files
+│   ├── current-accent    # Active Catppuccin accent (auto-detected from wallpaper)
 │   ├── mimeapps.list     # XDG MIME type associations
 │   ├── clinerules        # Zoo Code AI rules
-│   └── memory-strategy.md
+│   ├── memory-strategy.md
+│   └── SYSTEM.md         # Detailed system topology (for AI context)
 ├── README.md
-├── SYSTEM.md             # Detailed system topology (for AI context)
 └── .gitignore
 ```
 
@@ -93,7 +91,7 @@ All scripts in `~/scripts/` (POSIX sh, `-h` for help):
 | `theme` | Instant theme switcher (runtime, no rebuild) |
 | `wallpaper` | Wallpaper setter + auto theme matcher |
 | `compiler` | Multi-format document compiler (LaTeX, groff, md, etc.) |
-| `texnow` | Create new LaTeX project from template |
+| `texnow` | Create new LaTeX project (TEXINPUTS-based, leopard.sty v3, pdflatex default) |
 | `opout` | Open compiled output (PDF → zathura) |
 | `getcomproot` | Find root file of multi-file projects |
 | `auto-refresh.sh` | Power profile auto-switcher (systemd service) |
@@ -107,27 +105,26 @@ All scripts in `~/scripts/` (POSIX sh, `-h` for help):
 
 ## Theming
 
-Themes are managed by [Stylix](https://github.com/danth/stylix) using base16 colour schemes. The active theme is stored in `dotfiles/current-theme`.
+System-wide [Catppuccin Mocha](https://github.com/catppuccin/nix) (blue accent) via the catppuccin/nix flake module. All colours are hardcoded in dotfiles — no runtime theme switching.
 
-```bash
-theme                  # show current theme
-theme -l               # list curated themes (20 hand-picked)
-theme -a               # list all 303 available themes
-theme -p <name>        # preview theme colours in terminal
-theme -P               # interactive bemenu picker + apply
-theme <name>           # switch instantly (no rebuild)
-```
-
-Theme switching is instant — config files use `{{base00}}`…`{{base0F}}` placeholders that are substituted at runtime. Apps themed: Hyprland, Waybar, Kitty, Ghostty, Mako, Neovim, Yazi, bemenu.
-
-GTK and Starship follow the theme on next `nixos-rebuild` (Stylix handles these at build time).
+**Themed apps**: Hyprland, Waybar, Kitty, Ghostty, Mako, Neovim, Yazi, Zathura, bemenu (wrapper scripts), Linux TTY console, GTK, Starship, Delta (git pager), Brave (browser extension).
 
 ```bash
 wallpaper                     # list available wallpapers
-wallpaper <image>             # set wallpaper + auto-match best theme
-wallpaper <image> <theme>     # set wallpaper + specific theme
-wallpaper -m <image>          # show best-matching themes (ranked)
+wallpaper <image>             # set wallpaper + auto-detect best Catppuccin accent
 ```
+
+The wallpaper script extracts dominant colours from the image, matches against the 13 Catppuccin accent colours, and applies the best match to Hyprland borders via `hyprctl`. The accent name is stored in `dotfiles/current-accent`.
+
+### LaTeX quick-start
+
+```bash
+texnow                  # new project (timestamped)
+texnow my-topic         # named project
+texnow --standalone     # portable (copies leopard.sty locally)
+```
+
+Projects use the canonical [`leopard.sty`](https://github.com/ganddoffcha/nixos-config/blob/main/dotfiles/scripts/texnow) (60+ macros) found via `TEXINPUTS`. pdflatex is the default; uncomment the magic comment in `template.tex` for lualatex (CJK/Unicode). Build artifacts go to `out/` via latexmk.
 
 ## Power profiles
 
