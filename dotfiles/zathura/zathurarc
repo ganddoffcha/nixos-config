@@ -1,2 +1,40 @@
 set guioptions none
 set selection-clipboard clipboard
+
+" ── Catppuccin Mocha theme ──
+" Window / page surround
+set default-bg          "#1e1e2e"
+
+" Status bar
+set statusbar-bg        "#313244"
+set statusbar-fg        "#cdd6f4"
+set highlight-color     "#89b4fa66"
+set highlight-active-color "#89b4fa99"
+
+" Input bar
+set inputbar-bg         "#313244"
+set inputbar-fg         "#cdd6f4"
+
+" Notification
+set notification-bg     "#313244"
+set notification-fg     "#cdd6f4"
+set notification-error-bg "#313244"
+set notification-error-fg "#f38ba8"
+set notification-warning-bg "#313244"
+set notification-warning-fg "#fab387"
+
+" Completion
+set completion-bg       "#313244"
+set completion-fg       "#cdd6f4"
+set completion-highlight-bg "#45475a"
+set completion-highlight-fg "#cdd6f4"
+
+" Render loading
+set render-loading-bg   "#1e1e2e"
+set render-loading-fg   "#cdd6f4"
+
+" ── Dark-mode PDF recolor ──
+" Toggle with Ctrl+R in zathura
+set recolor             true
+set recolor-darkcolor   "#cdd6f4"
+set recolor-lightcolor  "#1e1e2e"
