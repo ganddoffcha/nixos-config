@@ -42,6 +42,13 @@
     "b4befe"  # 15 bright white (Lavender)
   ];
   console.font = "${pkgs.terminus_font}/share/consolefonts/ter-u32n.psf.gz";
+  # Use XKB config for virtual console keymap (caps:swapescape)
+  console.useXkbConfig = true;
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # KEYBOARD — XKB options shared between graphical session and TTY
+  # ═══════════════════════════════════════════════════════════════════════
+  services.xserver.xkb.options = "caps:swapescape";
 
   # ═══════════════════════════════════════════════════════════════════════
   # BOOT
