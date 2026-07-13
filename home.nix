@@ -496,6 +496,9 @@
   xdg.configFile."nvim/lua/user/autocmds.lua".source = ./dotfiles/nvim/lua/user/autocmds.lua;
   xdg.configFile."nvim/lua/user/plugins.lua".source = ./dotfiles/nvim/lua/user/plugins.lua;
   xdg.configFile."nvim/colors/base16-stylix.vim".source = ./dotfiles/nvim/colors/base16-stylix.vim;
+  # Override Catppuccin's invisible Conceal highlight (guifg matches guibg).
+  # after/plugin/ runs AFTER all plugins, ensuring the override sticks.
+  xdg.configFile."nvim/after/plugin/conceal.lua".source = ./dotfiles/nvim/after/plugin/conceal.lua;
   xdg.configFile."qutebrowser/config.py".source = ./dotfiles/qutebrowser/config.py;
   xdg.configFile."yazi/yazi.toml".source = ./dotfiles/yazi/yazi.toml;
   xdg.configFile."yazi/theme.toml".source = ./dotfiles/yazi/theme.toml;

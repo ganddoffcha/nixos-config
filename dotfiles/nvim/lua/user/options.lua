@@ -26,7 +26,7 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.scrolloff = 10
 vim.opt.mouse = ""
-vim.opt.conceallevel = 1
+vim.opt.conceallevel = 2
 
 -- Disable automatic commenting on newline
 vim.cmd("autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o")

@@ -11,17 +11,6 @@ return {
       require("catppuccin").setup({
         flavour = "mocha",
         transparent_background = false,
-        highlight_overrides = {
-          mocha = function(colors)
-            return {
-              -- vimtex conceal replaces LaTeX commands with Unicode glyphs.
-              -- Catppuccin's default Conceal uses guifg matching guibg
-              -- (#1e1e2e), making glyphs invisible. Override to Overlay0
-              -- gray (#6c7086) so concealed math is visible but subtle.
-              Conceal = { fg = colors.overlay0, bg = "NONE" },
-            }
-          end,
-        },
         integrations = {
           treesitter = true,
           native_lsp = { enabled = true },
