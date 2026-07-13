@@ -52,6 +52,7 @@
     wget
     direnv
     dash
+    jetbrains-mono
 
     # ── Modern CLI Tools ─────────────────────────────────────────────────
     scx.full
@@ -173,7 +174,9 @@
     defaultFonts = {
       sansSerif = [ "Google Sans" "Shanggu Sans" ];
       serif = [ "Shanggu Serif" ];
-      monospace = [ "Google Sans Mono" "Shanggu Mono" ];
+      # JetBrains Mono fills math/unicode glyphs missing from Google Sans Mono
+      # (fixes vimtex conceal showing blank cells for α,β,∈,⊆,ℝ,→ etc.)
+      monospace = [ "Google Sans Mono" "JetBrains Mono" "Shanggu Mono" ];
       emoji     = [ "Noto Color Emoji" ];
     };
   };
