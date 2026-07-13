@@ -58,7 +58,6 @@ in {
     vscode
 
     # ── Browsers ────────────────────────────────────────────────────────
-    brave
     qutebrowser
 
     # ── Terminals ───────────────────────────────────────────────────────
@@ -323,6 +322,11 @@ in {
     enable = true;
     nix-direnv.enable = true;
   };
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # BRAVE — themed by catppuccin/nix chrome module (installs theme extension)
+  # ═══════════════════════════════════════════════════════════════════════
+  programs.brave.enable = true;
 
   # ═══════════════════════════════════════════════════════════════════════
   # GTK — themed by catppuccin/nix module

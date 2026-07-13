@@ -3,8 +3,11 @@
 {
   imports = [
     ./hardware-configuration.nix
-    # home-manager and stylix are imported via flake.nix
+    # home-manager and catppuccin are imported via flake.nix
   ];
+
+  # Suppress catppuccin auto-enroll deprecation warning
+  catppuccin.autoEnable = true;
 
   # ═══════════════════════════════════════════════════════════════════════
   # HOME MANAGER — user config lives in home.nix
