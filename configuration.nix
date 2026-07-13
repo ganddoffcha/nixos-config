@@ -56,6 +56,8 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 10;
+  boot.loader.systemd-boot.editor = false;
+  boot.loader.timeout = 1;
 
   # Hibernation — resume from swapfile on root partition
   boot.resumeDevice = "/dev/disk/by-uuid/0e34ea3e-a813-4d7b-8b89-48b78b4fc5a9";
@@ -69,6 +71,9 @@
   #   mem_sleep_default=deep — prefer S3 deep sleep over s2idle
   #   resume_offset=210616320 — physical offset of /swapfile for hibernation
   boot.kernelParams = [
+    "quiet"
+    "loglevel=3"
+    "nowatchdog"
     "i8042.reset=1"
     "i8042.kbdreset=1"
     "atkbd.reset=1"
@@ -83,6 +88,10 @@
   # nvidia_uvm (and its dependency nvidia.ko) takes 35s to load at boot
   # and is only needed for CUDA workloads — auto-loads on demand.
   boot.kernelModules = lib.mkForce [ "kvm-intel" ];
+
+  # Initrd — zstd decompresses ~4× faster than default on NVMe
+  boot.initrd.compressor = "zstd";
+  boot.initrd.compressorArgs = [ "-19" "-T0" ];
 
   # ═══════════════════════════════════════════════════════════════════════
   # NETWORKING
@@ -296,6 +305,16 @@
   services.logind.settings.Login.HandleLidSwitch = "hibernate";
   services.logind.settings.Login.HandleLidSwitchExternalPower = "hibernate";
   services.logind.settings.Login.HandleSuspendKey = "hibernate";
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # SERVICE TUNING — delay non-critical services past boot
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # nvidia-powerd (1.169s on critical path) — only needed after login
+  systemd.services.nvidia-powerd = {
+    after = lib.mkForce [ "multi-user.target" ];
+    wantedBy = lib.mkForce [ "multi-user.target" ];
+  };
 
   # ═══════════════════════════════════════════════════════════════════════
   # NIX SETTINGS
