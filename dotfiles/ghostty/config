@@ -1,5 +1,8 @@
 # Catppuccin Mocha — 16 distinct ANSI colors
-background-opacity = 0.67
+# Fully opaque — fixes nvim line-disappear GPU rendering bug on NVIDIA PRIME.
+# Catppuccin colorscheme already provides solid #1e1e2e background in nvim,
+# so transparency serves no purpose in terminal editors.
+background-opacity = 1.0
 font-size = 12
 background = #1e1e2e
 foreground = #cdd6f4

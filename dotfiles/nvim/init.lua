@@ -19,5 +19,5 @@ require("user.keymaps")
 require("user.autocmds")
 require("lazy").setup("user.plugins")
 
--- Override with Stylix-generated base16 colourscheme (follows system theme)
-vim.cmd("colorscheme base16-stylix")
+-- Colourscheme is set by the catppuccin/nvim plugin (see lua/user/plugins.lua).
+-- Catppuccin Mocha with transparent_background=false provides solid #1e1e2e bg.
