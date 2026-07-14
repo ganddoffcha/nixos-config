@@ -32,22 +32,36 @@ current_refresh_rate() {
 }
 
 apply_battery() {
+    # Maximize screen real estate — strip all eye candy
     hyprctl --batch "\
 keyword monitor $MONITOR,${MODE_BATTERY},auto,auto;\
 keyword animations:enabled 0;\
 keyword decoration:blur:enabled 0;\
 keyword decoration:shadow:enabled 0;\
 keyword general:gaps_in 0;\
-keyword general:border_size 3" >/dev/null 2>&1
+keyword general:gaps_out 0;\
+keyword decoration:rounding 0;\
+keyword decoration:inactive_opacity 1.0;\
+keyword general:border_size 2" >/dev/null 2>&1
 }
 
 apply_charger() {
+    # Full rice — restore all visual polish
     hyprctl --batch "\
 keyword monitor $MONITOR,${MODE_CHARGER},auto,auto;\
 keyword animations:enabled 1;\
 keyword decoration:blur:enabled 1;\
 keyword decoration:shadow:enabled 1;\
-keyword general:gaps_in 0;\
+keyword general:gaps_in 4;\
+keyword general:gaps_out 8;\
+keyword decoration:rounding 8;\
+keyword decoration:active_opacity 1.0;\
+keyword decoration:inactive_opacity 0.92;\
+keyword decoration:blur:size 6;\
+keyword decoration:blur:passes 2;\
+keyword decoration:blur:vibrancy 0.2;\
+keyword decoration:shadow:range 12;\
+keyword decoration:shadow:render_power 3;\
 keyword general:border_size 3" >/dev/null 2>&1
 }
 
