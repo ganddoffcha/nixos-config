@@ -147,6 +147,11 @@
     cmatrix
     prismlauncher
 
+    # ── Qt Theming ──────────────────────────────────────────────────────
+    qt6Packages.qtstyleplugin-kvantum
+    catppuccin-kvantum
+    kdePackages.qt6ct
+
     # ── Fonts ───────────────────────────────────────────────────────────
     noto-fonts
     noto-fonts-color-emoji
@@ -374,6 +379,8 @@
     # tb/tf=bg/fg, nb/nf=normal, hb/hf=highlight, sb/sf=selected, scb/scf=scrollbar
     # -W 1.0 = full width (matching waybar). --fn + -H match waybar height.
     BEMENU_OPTS = "--tb=#313244 --tf=#cdd6f4 --fb=#313244 --ff=#cdd6f4 --nb=#313244 --nf=#cdd6f4 --hb=#6c7086 --hf=#f9e2af --sb=#6c7086 --sf=#a6e3a1 --scb=#1e1e2e --scf=#6c7086 -W 1.0 --fn 'Google Sans 10' -H 22 -B 0";
+    # Qt — use Kvantum SVG theme engine for Catppuccin theming
+    QT_STYLE_OVERRIDE = "kvantum";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
@@ -509,6 +516,12 @@
   xdg.configFile."yazi/theme.toml".source = ./dotfiles/yazi/theme.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
+
+  # ── Qt / Kvantum theming ──────────────────────────────────────────────
+  xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
+    [General]
+    theme=catppuccin-frappe-blue
+  '';
 
   # ── MIME associations ──────────────────────────────────────────────────
   xdg.configFile."mimeapps.list".source = ./dotfiles/mimeapps.list;
