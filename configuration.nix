@@ -42,13 +42,28 @@
     "b4befe"  # 15 bright white (Lavender)
   ];
   console.font = "${pkgs.terminus_font}/share/consolefonts/ter-u32n.psf.gz";
-  # Use XKB config for virtual console keymap (caps:swapescape)
+  # Use XKB config for virtual console keymap (layout, no swap — keyd handles that)
   console.useXkbConfig = true;
 
   # ═══════════════════════════════════════════════════════════════════════
-  # KEYBOARD — XKB options shared between graphical session and TTY
+  # KEYBOARD — evdev-level remap via keyd (works everywhere: Wayland, X11, TTY, Minecraft)
+  # keyd swaps Caps Lock ↔ Escape at the kernel input layer, so ALL apps
+  # see the correct keys regardless of whether they respect XKB options.
   # ═══════════════════════════════════════════════════════════════════════
-  services.xserver.xkb.options = "caps:swapescape";
+  services.keyd = {
+    enable = true;
+    keyboards = {
+      default = {
+        ids = [ "*" ];
+        settings = {
+          main = {
+            capslock = "esc";
+            esc = "capslock";
+          };
+        };
+      };
+    };
+  };
 
   # ═══════════════════════════════════════════════════════════════════════
   # BOOT
