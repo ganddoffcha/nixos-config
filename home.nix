@@ -85,6 +85,9 @@
     poppler-utils
     pdftk
 
+    # ── Document Viewers ─────────────────────────────────────────────────
+    jfbview  # framebuffer PDF viewer for TTY
+
     # ── Hyprland / Wayland ──────────────────────────────────────────────
     waybar
     mako
