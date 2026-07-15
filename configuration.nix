@@ -85,6 +85,7 @@
   #   i915.enable_guc=3 — enable GuC + HuC firmware for iGPU power management
   #   mem_sleep_default=deep — prefer S3 deep sleep over s2idle
   #   resume_offset=210616320 — physical offset of /swapfile for hibernation
+  #   fbcon=nodefer — keep fbcon/fbdev active for TTY framebuffer apps (jfbview, fbterm)
   boot.kernelParams = [
     "quiet"
     "loglevel=3"
@@ -99,6 +100,7 @@
     "i915.enable_guc=3"
     "mem_sleep_default=deep"
     "resume_offset=210616320"
+    "fbcon=nodefer"
   ];
 
   # Kernel modules — only kvm-intel at boot.
