@@ -43,7 +43,6 @@
     # ── Terminals ───────────────────────────────────────────────────────
     kitty
     ghostty
-    fbterm  # framebuffer terminal with full Unicode (JuliaMono, CJK)
 
     # ── Shell Tools ─────────────────────────────────────────────────────
     starship
