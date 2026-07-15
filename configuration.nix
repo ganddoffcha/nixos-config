@@ -134,7 +134,7 @@
   users.defaultUserShell = pkgs.zsh;
   users.users.gc = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = [ "wheel" "video" ];  # video = /dev/fb0 for fbterm
   };
 
   # ═══════════════════════════════════════════════════════════════════════
