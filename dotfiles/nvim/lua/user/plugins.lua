@@ -103,11 +103,18 @@ return {
     "lervag/vimtex",
     lazy = false,
     init = function()
-      vim.g.vimtex_view_method = "zathura"
       vim.g.vimtex_compiler_method = "latexmk"
       vim.g.tex_flavor = "latex"
       vim.g.vimtex_quickfix_mode = 1
       vim.g.tex_conceal = "abdmg"
+      -- Auto-detect viewer: jfbview on TTY (framebuffer), zathura on graphical
+      if vim.env.DISPLAY == nil or vim.env.DISPLAY == "" then
+        vim.g.vimtex_view_method = "general"
+        vim.g.vimtex_view_general_viewer = "jfbview"
+        vim.g.vimtex_view_general_options = "@pdf"
+      else
+        vim.g.vimtex_view_method = "zathura"
+      end
     end,
   },
 
