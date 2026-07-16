@@ -110,13 +110,19 @@ return {
       -- zoom/position (per-document zathura bookmarks).  Use \ll for
       -- routine compilation, \lv only when you need to jump.
       vim.g.vimtex_view_forward_search_on_start = 0
-      -- Auto-detect viewer: jfbview on TTY (framebuffer), zathura on graphical
+      -- Auto-detect viewer: jfbview on TTY (framebuffer), zathura on graphical.
+      -- Use zathura_simple instead of zathura — the latter uses xdotool (X11-only)
+      -- to detect existing instances, which fails on Wayland/Hyprland and causes
+      -- a new window to open on every \lv.  zathura_simple relies on zathura's
+      -- native socket-based IPC for instance detection — works on both X11 & Wayland.
+      -- Tradeoff: forward search (--synctex-forward) runs on every \lv including
+      -- the initial open.  Compensate by using \ll for routine compilation.
       if vim.env.DISPLAY == nil or vim.env.DISPLAY == "" then
         vim.g.vimtex_view_method = "general"
         vim.g.vimtex_view_general_viewer = "jfbview"
         vim.g.vimtex_view_general_options = "@pdf"
       else
-        vim.g.vimtex_view_method = "zathura"
+        vim.g.vimtex_view_method = "zathura_simple"
       end
     end,
   },
