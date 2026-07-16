@@ -16,7 +16,7 @@ return {
           native_lsp = { enabled = true },
           lsp_trouble = false,
           cmp = true,
-          gitsigns = true,
+          gitsigns = false,
           telescope = true,
           which_key = true,
         },
@@ -65,7 +65,6 @@ return {
   -- Git
   -- ═══════════════════════════════════════════════════════════════════════
   { "jreybert/vimagit" },
-  { "lewis6991/gitsigns.nvim", config = true },
 
   -- ═══════════════════════════════════════════════════════════════════════
   -- Status line
