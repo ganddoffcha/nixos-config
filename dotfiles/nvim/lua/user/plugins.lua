@@ -106,6 +106,10 @@ return {
       vim.g.tex_flavor = "latex"
       vim.g.vimtex_quickfix_mode = 1
       vim.g.tex_conceal = "abdmg"
+      -- Don't forward-search on first viewer open — preserves saved
+      -- zoom/position (per-document zathura bookmarks).  Use \ll for
+      -- routine compilation, \lv only when you need to jump.
+      vim.g.vimtex_view_forward_search_on_start = 0
       -- Auto-detect viewer: jfbview on TTY (framebuffer), zathura on graphical
       if vim.env.DISPLAY == nil or vim.env.DISPLAY == "" then
         vim.g.vimtex_view_method = "general"

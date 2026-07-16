@@ -1,6 +1,11 @@
 set guioptions none
 set selection-clipboard clipboard
 
+" ── Open at page-width fit (default).  Zoom is saved per-document
+" ── in ~/.local/share/zathura/bookmarks — set zoom once, it persists.
+" ── For vimtex: use \ll to compile without jumping, \lv to jump.
+set adjust-open "width"
+
 " ── Catppuccin Mocha theme ──
 " Window / page surround
 set default-bg          "#1e1e2e"
