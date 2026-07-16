@@ -105,6 +105,15 @@ return {
       vim.g.vimtex_compiler_method = "latexmk"
       vim.g.tex_flavor = "latex"
       vim.g.vimtex_quickfix_mode = 1
+      -- Suppress noise warnings from quickfix (first-pass refs, hyperref Unicode, etc.)
+      -- Only real errors will open the quickfix list.  Remove filters to see all warnings.
+      vim.g.vimtex_quickfix_ignore_filters = {
+        [[Reference .* undefined]],
+        [[There were undefined references]],
+        [[Label\(s\) may have changed]],
+        [[Package rerunfilecheck Warning]],
+        [[Token not allowed in a PDF string]],
+      }
       vim.g.tex_conceal = "abdmg"
       -- Don't forward-search on first viewer open — preserves saved
       -- zoom/position (per-document zathura bookmarks).  Use \ll for
