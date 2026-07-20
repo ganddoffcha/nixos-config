@@ -562,8 +562,8 @@
   # ═══════════════════════════════════════════════════════════════════════
   # POWER MANAGEMENT — auto-switch compositor settings on AC state change
   # ═══════════════════════════════════════════════════════════════════════
-  home.file."scripts/auto-refresh.sh" = {
-    source = ./dotfiles/scripts/auto-refresh.sh;
+  home.file."scripts/auto-refresh" = {
+    source = ./dotfiles/scripts/auto-refresh;
     executable = true;
   };
   home.file."scripts/rebuild" = {
@@ -579,7 +579,7 @@
     };
     Service = {
       Type = "oneshot";
-      ExecStart = "%h/scripts/auto-refresh.sh";
+      ExecStart = "%h/scripts/auto-refresh";
     };
   };
 
@@ -688,8 +688,8 @@
   # ═══════════════════════════════════════════════════════════════════════
   home.activation = lib.mkAfter {
     autoRefresh = ''
-      if [ -x "$HOME/scripts/auto-refresh.sh" ]; then
-        "$HOME/scripts/auto-refresh.sh" || true
+      if [ -x "$HOME/scripts/auto-refresh" ]; then
+        "$HOME/scripts/auto-refresh" || true
       fi
     '';
     bootstrapHypridle = ''
