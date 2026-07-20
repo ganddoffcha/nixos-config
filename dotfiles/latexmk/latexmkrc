@@ -2,7 +2,7 @@ $bibtex_use = 1.5;
 $cleanup_includes_cusdep_generated = 1;
 $cleanup_includes_generated = 1;
 $out_dir = "out";
-$pdf_mode = 1;                 # pdflatex (fast, for English-only docs)
+$pdf_mode = 1;                 # fallback default (project-local latexmkrc overrides)
 $silent = 0;
 
 # SyncTeX — on by default for pdflatex/lualatex via vimtex

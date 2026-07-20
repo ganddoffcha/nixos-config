@@ -56,7 +56,14 @@ case "${ext}" in
     scad) openscad -o "${base}.stl" "${file}" ;;
     sent) setsid -f sent "${file}" 2> "/dev/null" ;;
     tex)
-            out=$(latexmk -g -latexoption="-halt-on-error" "${file}" 2>&1) || \
+            # Detect engine from magic comment (% !TEX program = <engine>)
+            engine=""
+            engine_line=$(head -5 "${file}" | grep -oP '^% !TEX program\s*=\s*\K\S+')
+            case "${engine_line}" in
+                lualatex) engine="-lualatex" ;;
+                xelatex) engine="-xelatex" ;;
+            esac
+            out=$(latexmk -g -latexoption="-halt-on-error" ${engine} "${file}" 2>&1) || \
             printf "%s\n" "$out" | awk '
                 /^!/ { show=1 }
                 /^[ \t]*[0-9]+ words of node memory/ || /^!  ==> Fatal error/ || /^Latexmk:/ { show=0 }

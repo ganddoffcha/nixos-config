@@ -294,6 +294,16 @@
 
       # atuin — shell history (must be after starship)
       eval "$(atuin init zsh --disable-up-arrow)"
+
+      # yazi — preserve CWD on exit
+      function yazi() {
+        local tmp="$(mktemp -t "yazi-cwd.XXXXX")"
+        command yazi "$@" --cwd-file="$tmp"
+        if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+          cd -- "$cwd"
+        fi
+        rm -f -- "$tmp"
+      }
     '';
     profileExtra = ''
       # Start Hyprland via uwsm (Wayland session manager)
