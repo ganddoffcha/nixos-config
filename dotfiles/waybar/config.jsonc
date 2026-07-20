@@ -115,8 +115,8 @@
  "interval": 10
     },
     "temperature": {
-        "thermal-zone": 6,
-        "critical-threshold": 80,
+        "thermal-zone": 7,
+        "critical-threshold": 95,
         "format": "{temperatureC}°C {icon}",
         "format-icons": ["", "", ""],
  "interval": 5
