@@ -388,6 +388,8 @@
     # Search ~/Documents/texnow/ recursively for leopard.sty etc.
     # The trailing // enables kpathsea recursive subdirectory search.
     TEXINPUTS = "${config.home.homeDirectory}/Documents/texnow//:";
+    # Gaming — force SDL2 games to use native Wayland (Factorio, etc.)
+    SDL_VIDEODRIVER = "wayland";
     # bemenu — Catppuccin Mocha colours
     # tb/tf=bg/fg, nb/nf=normal, hb/hf=highlight, sb/sf=selected, scb/scf=scrollbar
     # -W 1.0 = full width (matching waybar). --fn + -H match waybar height.

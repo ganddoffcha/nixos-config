@@ -209,8 +209,12 @@
 
   # ═══════════════════════════════════════════════════════════════════════
   # STEAM — gaming platform, enables 32-bit support + controller udev rules
+  # Proton-GE for better game compatibility (media codecs, FSR, game-specific fixes)
   # ═══════════════════════════════════════════════════════════════════════
-  programs.steam.enable = true;
+  programs.steam = {
+    enable = true;
+    extraCompatPackages = [ pkgs.proton-ge-bin ];
+  };
 
   # ═══════════════════════════════════════════════════════════════════════
   # GAMESCOPE — micro-compositor for gaming on Wayland (frame pacing, FSR, HDR)
