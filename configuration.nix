@@ -213,6 +213,11 @@
   programs.steam.enable = true;
 
   # ═══════════════════════════════════════════════════════════════════════
+  # GAMESCOPE — micro-compositor for gaming on Wayland (frame pacing, FSR, HDR)
+  # ═══════════════════════════════════════════════════════════════════════
+  programs.gamescope.enable = true;
+
+  # ═══════════════════════════════════════════════════════════════════════
   # ASUS DAEMON — charge limits, fan curves, platform profiles
   # ═══════════════════════════════════════════════════════════════════════
   services.asusd = {
