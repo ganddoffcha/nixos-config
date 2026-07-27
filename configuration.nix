@@ -208,6 +208,11 @@
   programs.nano.enable = false;
 
   # ═══════════════════════════════════════════════════════════════════════
+  # STEAM — gaming platform, enables 32-bit support + controller udev rules
+  # ═══════════════════════════════════════════════════════════════════════
+  programs.steam.enable = true;
+
+  # ═══════════════════════════════════════════════════════════════════════
   # ASUS DAEMON — charge limits, fan curves, platform profiles
   # ═══════════════════════════════════════════════════════════════════════
   services.asusd = {
