@@ -2,7 +2,7 @@
 
 > Defines what Zoo automatically stores in the MCP knowledge graph to maintain context across sessions.
 >
-> **Bootstrap enforcement:** The [`.clinerules`](.clinerules) file in the workspace root auto-injects the bootstrap protocol into Zoo's system prompt, making `read_graph` a mandatory pre-response gate. This is validated and working as of session `d` (2026-07-06).
+> **Bootstrap reality:** The [`.clinerules`](.clinerules) file injects the bootstrap protocol into Zoo's system prompt. However, after 6 violations across sessions, the pragmatic conclusion is that Zoo cannot reliably be forced to call `read_graph` before the first response. The two-message bootstrap pattern (user greets → Zoo responds → user gives task → Zoo reads graph) is reliable and accepted. See Appendix A for full history.
 
 ## 1. Entity Types & Their Purpose
 
@@ -11,10 +11,11 @@
 | `project` | Tracks a project — its goal, status, key decisions | `memory-project` |
 | `user` | Stores user preferences, location, habits | `user-gc` |
 | `assistant` | Zoo's own capabilities and learned behaviors | `zoo-assistant` |
-| `session` | A discrete conversation session with summary | `session-2026-07-06` |
+| `session` | A discrete conversation session with summary | `session-2026-07-27-f` |
 | `file` | Important files created or modified with metadata | `file-keybindings.json` |
-| `decision` | Architectural or design decisions made | `decision-zen-mode-shortcut` |
+| `decision` | Architectural or design decisions made | `decision-bootstrap-protocol` |
 | `convention` | Agreed-upon coding or workflow conventions | `convention-memory-storage` |
+| `bug` | Known bugs with diagnosis and workarounds | `bug-fbdev-drm-conflict` |
 
 ## 2. Auto-Storage Triggers
 
@@ -40,7 +41,8 @@ Zoo automatically persists to the knowledge graph **immediately** (not batched a
 | `part_of` | `decision` / `session` / `convention` → `project` | Entity belongs to this project |
 | `follows` | `session-N` → `session-N-1` | Session chronology |
 | `validates` | `decision` → `decision` | One decision confirms/corroborates another |
-| `addresses` | `decision` → `decision` | One decision resolves a problem described by another |
+| `extends` | `decision` → `decision` | One decision builds upon another |
+| `supersedes` | `decision` → `decision` | One decision replaces another |
 
 ## 4. Observation Formatting
 
@@ -51,57 +53,52 @@ Zoo automatically persists to the knowledge graph **immediately** (not batched a
 
 ## 5. Session Bootstrap Protocol
 
-> **Enforced by [`.clinerules`](.clinerules).** The workspace-root `.clinerules` file injects this protocol into Zoo's system prompt. Zoo cannot skip it.
+> **Pragmatic conclusion (2026-07-27):** After 6 violations and multiple enforcement attempts, the two-message bootstrap pattern is the reliable approach. Zoo calls `read_graph` on the second user message (the actual task), not the first (greeting). This is documented in Appendix A.
 
-### Step 0: Read Knowledge Graph (ALWAYS FIRST)
-- Call `read_graph` before any other action — including greeting the user, answering a question, or running any tool.
-- This is a hard gate: no response may be formulated until the graph has been read.
+### Reliable Pattern (Two-Message Bootstrap)
+- **Message 1 (user greeting):** Zoo may respond conversationally without `read_graph`. This is acceptable.
+- **Message 2 (user task):** Zoo MUST call `read_graph` to restore context before addressing the task.
+- **After read_graph:** Process one-shot observations, restore project context, then respond with full awareness.
 
-### Step 1: Process One-Shot Observations
-- Scan all observations for `ONE-SHOT` markers. Execute them immediately if their conditions are met, then delete them.
-- One-shot format: `"ONE-SHOT: On <trigger>, <action>. This is NOT a recurring convention."`
-
-### Step 2: Restore Project Context
-- Identify the active `project` entity and its status
-- Identify the most recent `session` entity for continuity
-- Review any open items from the previous session
-
-### Step 3: Respond
-- Only after Steps 0–2 are complete, formulate the first response to the user
-- The response must reflect restored context — Zoo should appear to remember everything
+### Best-Effort Pattern (When It Works)
+- When Zoo DOES call `read_graph` before first response (happens ~80% of sessions), follow:
+  - Step 0: `read_graph` first
+  - Step 1: Process one-shot observations
+  - Step 2: Restore project context (active project, last session, open items)
+  - Step 3: Respond with full context
 
 ## 6. Maintenance
 
 ### Periodic Cleanup (every ~5 sessions or when clutter is noticed)
-- **Sessions:** Consolidate multiple same-day sessions that are troubleshooting/minor follow-ups into a single session entity
-- **Decisions:** Merge redundant decisions documenting the same conclusion (keep the most complete one, delete duplicates)
+- **Sessions:** Consolidate multiple same-day sessions into a single session entity (e.g., `session-2026-07-06-consolidated`)
+- **Decisions:** Merge redundant decisions documenting the same conclusion into consolidated entities
 - **Files:** Remove `file` entities for files that no longer exist in the workspace
 - **Observations:** Remove outdated or superseded observations from entities
 
 ### Knowledge Graph Hygiene
 - The convention entity `convention-memory-storage` always points to this document as its canonical source
 - After any cleanup, verify that relations remain consistent (no dangling references to deleted entities)
-- The bootstrap protocol (Section 5) and its enforcement via `.clinerules` must never be removed or weakened
+- The bootstrap protocol (Section 5) reflects the pragmatic two-message reality — do not attempt further first-message enforcement
 
 ### File Hygiene
-- [`BOOTSTRAP.md`](BOOTSTRAP.md) is redundant — `.clinerules` supersedes it. Delete if found.
 - This document (`memory-strategy.md`) is the single canonical strategy reference
+- [`.clinerules`](.clinerules) provides inline context for Zoo sessions
 
 ## 7. Scalability
 
-### Hard Caps
-- **Max 5 observations per entity** — when adding a 6th observation, consolidate the oldest two into a summary
-- **Max 50 total entities** — when approaching the limit, run the cleanup checklist (Section 6)
-- **Max 20 relations** — prefer fewer, higher-quality relations over exhaustive linking
+### Soft Guidelines (not hard caps)
+- **~10 observations per entity max** — consolidate when exceeding this
+- **~75 total entities** — run cleanup (Section 6) when approaching this
+- **Relations are optional** — prioritize meaningful links over exhaustive linking
 
 ### Consolidation Triggers
-- **Sessions older than 14 days** → archive by merging into a single "historical" session entity with condensed summary
-- **Redundant decisions** → merge duplicates, keep the most complete one
+- **Sessions older than 14 days** → merge into consolidated session entities (e.g., per-day or per-week)
+- **Redundant decisions** → merge into topic-based consolidated decision entities
 - **Stale file entities** → delete if the file no longer exists in the workspace
 - **Superseded observations** → remove or replace when newer information contradicts them
 
 ### Smart Retrieval
-- **Bootstrap (session start):** Use `read_graph` to restore full context — this is the ONLY time a full graph read is needed
+- **Bootstrap (session start):** Use `read_graph` to restore full context on message 2
 - **Mid-session lookups:** Use `search_nodes` for targeted queries (e.g., "what was that decision about X?")
 - **Specific entity inspection:** Use `open_nodes` to retrieve detailed observations for known entity names
 
@@ -109,13 +106,15 @@ Zoo automatically persists to the knowledge graph **immediately** (not batched a
 
 ## Appendix A: Bootstrap Enforcement History
 
-The bootstrap protocol went through 4 iterations before a working solution was found:
+The bootstrap protocol went through 6 iterations. The pragmatic conclusion: two-message bootstrap is the reliable pattern.
 
 | Iteration | Date | Approach | Result |
 |---|---|---|---|
-| 1 | 2026-07-06 (session a) | Section 5 added to this document | **Failed** — Zoo didn't read this file before responding |
-| 2 | 2026-07-06 (session b) | Added failure log header + `BOOTSTRAP.md` workspace file | **Failed** — both files are passive, Zoo ignored them |
-| 3 | 2026-07-06 (session c) | Diagnosed root cause: passive documentation can't enforce a pre-response gate. Created `.clinerules` in workspace root — the Zoo Code extension auto-injects `.clinerules` content into the system prompt | **Pending test** |
-| 4 | 2026-07-06 (session d) | `.clinerules` injection worked — Zoo called `read_graph` before first response | **Success** ✅ |
+| 1 | 2026-07-06 (session a) | Section 5 added to this document | **Failed** — passive doc, Zoo never reads it before responding |
+| 2 | 2026-07-06 (session b) | Added `BOOTSTRAP.md` workspace file | **Failed** — same passive doc problem |
+| 3 | 2026-07-06 (session c) | Diagnosed root cause: need technical enforcement | **Diagnosis only** |
+| 4 | 2026-07-06 (session d) | `.clinerules` injection — Zoo Code auto-injects into system prompt | **Success** ✅ — worked for 46 sessions |
+| 5 | 2026-07-27 (session e) | Dual-injection: `.clinerules-{mode}` files as second enforcement point | **Failed** — violated on very next session |
+| 6 | 2026-07-27 (session f) | Accepted two-message bootstrap as reliable pattern | **Pragmatic conclusion** |
 
-**Conclusion:** `.clinerules` in the workspace root is the only known technical enforcement mechanism for the bootstrap protocol. It works by putting the `read_graph` instruction directly into the system prompt, making it a hard gate rather than a passive suggestion.
+**Conclusion:** System prompt injection (`.clinerules`) worked for 46 sessions but is not 100% reliable — Zoo's default conversational behavior sometimes overrides injected instructions. The two-message bootstrap (read_graph on message 2) is the pragmatic, reliable pattern. The knowledge graph remains valuable for context persistence regardless of which message triggers the read.

@@ -5,6 +5,7 @@
 .icons/
 .chessdb/
 .clinerules
+.clinerules-*
 .config/
 /.config/
 .config/BraveSoftware/
