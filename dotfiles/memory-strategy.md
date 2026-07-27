@@ -2,7 +2,7 @@
 
 > Defines what Zoo automatically stores in the MCP knowledge graph to maintain context across sessions.
 >
-> **Bootstrap reality:** The [`.clinerules`](.clinerules) file injects the bootstrap protocol into Zoo's system prompt. However, after 6 violations across sessions, the pragmatic conclusion is that Zoo cannot reliably be forced to call `read_graph` before the first response. The two-message bootstrap pattern (user greets → Zoo responds → user gives task → Zoo reads graph) is reliable and accepted. See Appendix A for full history.
+> **Bootstrap enforcement:** [`.clinerules`](.clinerules) contains ONLY the bootstrap gate (5 lines: "STOP. Call read_graph first."). All context (active projects, rules, session history) lives in [`CONTEXT.md`](CONTEXT.md) which Zoo reads AFTER `read_graph`. This isolation prevents the gate instruction from being diluted by other content. See Appendix A for full history.
 
 ## 1. Entity Types & Their Purpose
 
@@ -53,19 +53,21 @@ Zoo automatically persists to the knowledge graph **immediately** (not batched a
 
 ## 5. Session Bootstrap Protocol
 
-> **Pragmatic conclusion (2026-07-27):** After 6 violations and multiple enforcement attempts, the two-message bootstrap pattern is the reliable approach. Zoo calls `read_graph` on the second user message (the actual task), not the first (greeting). This is documented in Appendix A.
+> **Gate-only `.clinerules` (2026-07-27 session f):** [`.clinerules`](.clinerules) contains ONLY the bootstrap gate — 5 lines with zero competing content. All context (active projects, rules, history) is in [`CONTEXT.md`](CONTEXT.md). The theory: isolation prevents gate instruction dilution.
 
-### Reliable Pattern (Two-Message Bootstrap)
-- **Message 1 (user greeting):** Zoo may respond conversationally without `read_graph`. This is acceptable.
-- **Message 2 (user task):** Zoo MUST call `read_graph` to restore context before addressing the task.
-- **After read_graph:** Process one-shot observations, restore project context, then respond with full awareness.
+### Bootstrap Sequence
+1. **`.clinerules` injected into system prompt** → Zoo sees "STOP. Call read_graph first." with no other content
+2. **Zoo calls `mcp--memory--read_graph`** → restores knowledge graph context
+3. **Zoo reads [`CONTEXT.md`](CONTEXT.md)** → gets active projects, critical rules, session history
+4. **Zoo responds** → with full awareness of all context
 
-### Best-Effort Pattern (When It Works)
-- When Zoo DOES call `read_graph` before first response (happens ~80% of sessions), follow:
-  - Step 0: `read_graph` first
-  - Step 1: Process one-shot observations
-  - Step 2: Restore project context (active project, last session, open items)
-  - Step 3: Respond with full context
+### File Architecture
+| File | Purpose | Injected? |
+|---|---|---|
+| [`.clinerules`](.clinerules) | Bootstrap gate ONLY (5 lines) | Yes — auto-injected by Zoo Code |
+| [`CONTEXT.md`](CONTEXT.md) | Active projects, rules, history | No — read by Zoo via tool after bootstrap |
+| [`memory-strategy.md`](memory-strategy.md) | Memory strategy documentation | No — reference only |
+| [`SESSION_LOG.md`](SESSION_LOG.md) | Human-readable session history | No — reference only |
 
 ## 6. Maintenance
 
@@ -106,15 +108,16 @@ Zoo automatically persists to the knowledge graph **immediately** (not batched a
 
 ## Appendix A: Bootstrap Enforcement History
 
-The bootstrap protocol went through 6 iterations. The pragmatic conclusion: two-message bootstrap is the reliable pattern.
+7 iterations. Current approach (v7): gate-only `.clinerules` — zero competing content.
 
 | Iteration | Date | Approach | Result |
 |---|---|---|---|
-| 1 | 2026-07-06 (session a) | Section 5 added to this document | **Failed** — passive doc, Zoo never reads it before responding |
-| 2 | 2026-07-06 (session b) | Added `BOOTSTRAP.md` workspace file | **Failed** — same passive doc problem |
-| 3 | 2026-07-06 (session c) | Diagnosed root cause: need technical enforcement | **Diagnosis only** |
-| 4 | 2026-07-06 (session d) | `.clinerules` injection — Zoo Code auto-injects into system prompt | **Success** ✅ — worked for 46 sessions |
-| 5 | 2026-07-27 (session e) | Dual-injection: `.clinerules-{mode}` files as second enforcement point | **Failed** — violated on very next session |
-| 6 | 2026-07-27 (session f) | Accepted two-message bootstrap as reliable pattern | **Pragmatic conclusion** |
+| 1 | 2026-07-06 (session a) | Section 5 added to this document | **Failed** — passive doc |
+| 2 | 2026-07-06 (session b) | `BOOTSTRAP.md` workspace file | **Failed** — passive doc |
+| 3 | 2026-07-06 (session c) | Diagnosed root cause: need technical enforcement | **Diagnosis** |
+| 4 | 2026-07-06 (session d) | `.clinerules` injection (67 lines) | **Success** ✅ — 46 sessions |
+| 5 | 2026-07-27 (session e) | Dual-injection: `.clinerules-{mode}` files | **Failed** — violated next session |
+| 6 | 2026-07-27 (session f) | Two-message bootstrap (pragmatic) | **Rejected** — user wants immediate |
+| 7 | 2026-07-27 (session f v2) | **Gate-only `.clinerules`** — 5 lines, zero context dilution. Context → `CONTEXT.md` | **Pending test** |
 
-**Conclusion:** System prompt injection (`.clinerules`) worked for 46 sessions but is not 100% reliable — Zoo's default conversational behavior sometimes overrides injected instructions. The two-message bootstrap (read_graph on message 2) is the pragmatic, reliable pattern. The knowledge graph remains valuable for context persistence regardless of which message triggers the read.
+**Current theory:** Previous failures occurred because the bootstrap gate instruction was diluted by 70+ lines of context in the same injected file. By isolating the gate to its own file with zero competing content, the instruction should be impossible to miss. Testing requires VSCode restart.
