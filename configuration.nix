@@ -364,6 +364,80 @@
   };
 
   # ═══════════════════════════════════════════════════════════════════════
+  # CPU THERMAL MANAGEMENT — cap RAPL power limits + tune EPP
+  #
+  # i7-13620H (45W base / 115W max turbo). ASUS firmware sets PL1=200W
+  # in performance mode which the laptop chassis cannot cool, causing
+  # constant PROCHOT thermal throttling (125K+ events logged).
+  #
+  # Fix: cap PL1 to 80W sustained, PL2 to 115W burst, set EPP to
+  # balance_performance on all cores, switch platform profile to balanced.
+  # ═══════════════════════════════════════════════════════════════════════
+
+  # Boot-time: set RAPL caps + EPP before login
+  systemd.services.cpu-thermal-mgmt = {
+    description = "Cap CPU power limits and set balanced EPP to prevent thermal throttling";
+    after = [ "multi-user.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      # Cap RAPL power limits — 80W PL1 (sustained), 115W PL2 (burst)
+      RAPL_DIR="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
+      if [ -f "$RAPL_DIR/constraint_0_power_limit_uw" ]; then
+        echo 80000000 > "$RAPL_DIR/constraint_0_power_limit_uw"   # PL1: 80W
+        echo 115000000 > "$RAPL_DIR/constraint_1_power_limit_uw"  # PL2: 115W
+      fi
+
+      # Set energy_performance_preference to balance_performance on all CPUs
+      for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+        [ -f "$cpu" ] && echo balance_performance > "$cpu" || true
+      done
+    '';
+  };
+
+  # Post-login: set ASUS platform profile to balanced (after asusd + graphical session)
+  systemd.services.cpu-thermal-profile = {
+    description = "Switch ASUS platform profile to balanced after asusd starts";
+    after = [ "asusd.service" "graphical.target" ];
+    wantedBy = [ "graphical.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      if [ -f /sys/firmware/acpi/platform_profile ]; then
+        echo balanced > /sys/firmware/acpi/platform_profile || true
+      fi
+    '';
+  };
+
+  # Re-apply thermal caps on resume from suspend/hibernate
+  systemd.services.cpu-thermal-mgmt-resume = {
+    description = "Re-apply CPU thermal caps after resume";
+    after = [ "sleep.target" ];
+    wantedBy = [ "sleep.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+    };
+    script = ''
+      RAPL_DIR="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
+      if [ -f "$RAPL_DIR/constraint_0_power_limit_uw" ]; then
+        echo 80000000 > "$RAPL_DIR/constraint_0_power_limit_uw"
+        echo 115000000 > "$RAPL_DIR/constraint_1_power_limit_uw"
+      fi
+      for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+        [ -f "$cpu" ] && echo balance_performance > "$cpu" || true
+      done
+      if [ -f /sys/firmware/acpi/platform_profile ]; then
+        echo balanced > /sys/firmware/acpi/platform_profile || true
+      fi
+    '';
+  };
+
+  # ═══════════════════════════════════════════════════════════════════════
   # NIX SETTINGS
   # ═══════════════════════════════════════════════════════════════════════
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
