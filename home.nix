@@ -160,7 +160,11 @@
     noto-fonts-color-emoji
     font-awesome
     shanggu-fonts
+
   ];
+
+  # ── Proton GE (declarative Steam compatibility tool) ──────────────────
+  home.file.".local/share/Steam/compatibilitytools.d/GE-Proton11-1".source = pkgs.proton-ge-bin.steamcompattool;
 
   # ═══════════════════════════════════════════════════════════════════════
   # CURSOR — managed declaratively instead of manual ~/.local/share/icons
