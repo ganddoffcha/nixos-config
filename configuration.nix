@@ -398,9 +398,9 @@
     '';
   };
 
-  # Post-login: set ASUS platform profile to balanced (after asusd + graphical session)
+  # Post-login: set ASUS platform profile + EPP (after asusd + graphical session)
   systemd.services.cpu-thermal-profile = {
-    description = "Switch ASUS platform profile to balanced after asusd starts";
+    description = "Switch ASUS platform profile to balanced and set EPP after asusd starts";
     after = [ "asusd.service" "graphical.target" ];
     wantedBy = [ "graphical.target" ];
     serviceConfig = {
@@ -411,6 +411,9 @@
       if [ -f /sys/firmware/acpi/platform_profile ]; then
         echo balanced > /sys/firmware/acpi/platform_profile || true
       fi
+      for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+        [ -f "$cpu" ] && echo balance_performance > "$cpu" || true
+      done
     '';
   };
 
