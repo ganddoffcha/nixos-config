@@ -228,6 +228,41 @@
     enable = true;
   };
 
+  # Override asusd balanced profile EPP from BalancePower → BalancePerformance.
+  # asusd sets EPP based on platform_profile and was overriding our
+  # balance_performance setting with BalancePower, keeping CPU in low-power
+  # frequency mode even on AC. BalancePerformance lets the CPU clock up
+  # when needed while still saving power at idle.
+  environment.etc."asusd/asusd.ron" = {
+    mode = "0444";
+    text = ''
+      (
+          charge_control_end_threshold: 80,
+          base_charge_control_end_threshold: 80,
+          disable_nvidia_powerd_on_battery: true,
+          ac_command: "",
+          bat_command: "",
+          platform_profile_linked_epp: true,
+          platform_profile_on_battery: Quiet,
+          change_platform_profile_on_battery: true,
+          platform_profile_on_ac: Performance,
+          change_platform_profile_on_ac: true,
+          profile_quiet_epp: Power,
+          profile_balanced_epp: BalancePerformance,
+          profile_custom_epp: Performance,
+          profile_performance_epp: Performance,
+          ac_profile_tunings: {},
+          dc_profile_tunings: {
+              Quiet: (
+                  enabled: false,
+                  group: {},
+              ),
+          },
+          armoury_settings: {},
+      )
+    '';
+  };
+
   # ═══════════════════════════════════════════════════════════════════════
   # THERMAL MANAGEMENT — adaptive CPU throttling for Intel laptops
   # ═══════════════════════════════════════════════════════════════════════
@@ -396,13 +431,19 @@
   # in performance mode which the laptop chassis cannot cool, causing
   # constant PROCHOT thermal throttling (125K+ events logged).
   #
-  # Fix: cap PL1 to 80W sustained, PL2 to 115W burst, set EPP to
-  # balance_performance on all cores, switch platform profile to balanced.
+  # KEY FINDING (2026-07-28): RAPL sysfs constraint_0_max_power_uw = 45W.
+  # Writes above 45W are silently rejected by the kernel driver. The 80W
+  # PL1 cap never worked — it was ignored. 45W is the hardware-enforced
+  # sysfs maximum and matches the i7-13620H base TDP.
+  #
+  # Fix: PL1=45W (was 80W, silently rejected), PL2=115W, governor=performance
+  # on AC, EPP=balance_performance. asusd balanced profile EPP changed to
+  # BalancePerformance (was BalancePower) via environment.etc override below.
   # ═══════════════════════════════════════════════════════════════════════
 
-  # Boot-time: set RAPL caps + EPP based on AC status (before login)
+  # Boot-time: set RAPL caps + governor + EPP based on AC status (before login)
   systemd.services.cpu-thermal-mgmt = {
-    description = "Cap CPU power limits and set EPP based on AC status";
+    description = "Cap CPU power limits, set governor and EPP based on AC status";
     after = [ "multi-user.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
@@ -424,18 +465,24 @@
       done
 
       if [ "$on_ac" = "1" ]; then
-        # AC: gaming-ready — PL1=80W, balanced profile, balance_performance EPP
-        echo 80000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        # AC: gaming-ready — PL1=45W (RAPL sysfs max), PL2=115W, performance governor
+        echo 45000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
         echo 115000000 > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
         echo balanced  > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+          [ -f "$c" ] && echo performance > "$c" || true
+        done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo balance_performance > "$c" || true
         done
       else
-        # Battery: max life — PL1=20W, quiet profile, power EPP
+        # Battery: max life — PL1=20W, quiet profile, powersave governor
         echo 20000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
         echo 35000000  > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
         echo quiet     > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+          [ -f "$c" ] && echo powersave > "$c" || true
+        done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo power > "$c" || true
         done
@@ -443,9 +490,11 @@
     '';
   };
 
-  # Post-login: enforce profile + EPP (after asusd + graphical session)
+  # Post-login: re-apply RAPL caps + governor + EPP (after asusd + graphical)
+  # asusd sets platform_profile_on_ac=Performance which triggers firmware
+  # PL1=200W MSR write. This service runs AFTER asusd to override PL1 back.
   systemd.services.cpu-thermal-profile = {
-    description = "Enforce platform profile and EPP after asusd starts";
+    description = "Re-apply CPU thermal caps after asusd starts";
     after = [ "asusd.service" "graphical.target" ];
     wantedBy = [ "graphical.target" ];
     serviceConfig = {
@@ -453,6 +502,8 @@
       RemainAfterExit = true;
     };
     script = ''
+      RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
+
       on_ac=0
       for psu in /sys/class/power_supply/*/type; do
         if [ "$(cat "$psu" 2>/dev/null)" = "Mains" ]; then
@@ -464,12 +515,23 @@
       done
 
       if [ "$on_ac" = "1" ]; then
-        echo balanced > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        # Re-cap PL1 after asusd may have triggered firmware 200W override
+        echo 45000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 115000000 > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+        echo balanced  > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+          [ -f "$c" ] && echo performance > "$c" || true
+        done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo balance_performance > "$c" || true
         done
       else
-        echo quiet > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        echo 20000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 35000000  > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+        echo quiet     > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+          [ -f "$c" ] && echo powersave > "$c" || true
+        done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo power > "$c" || true
         done
@@ -499,9 +561,12 @@
       done
 
       if [ "$on_ac" = "1" ]; then
-        echo 80000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 45000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
         echo 115000000 > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
         echo balanced  > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+          [ -f "$c" ] && echo performance > "$c" || true
+        done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo balance_performance > "$c" || true
         done
@@ -509,6 +574,9 @@
         echo 20000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
         echo 35000000  > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
         echo quiet     > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+          [ -f "$c" ] && echo powersave > "$c" || true
+        done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo power > "$c" || true
         done
