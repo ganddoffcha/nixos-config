@@ -248,16 +248,42 @@
   };
 
   # ═══════════════════════════════════════════════════════════════════════
-  # PCIe ASPM — performance on AC, powersupersave on battery
+  # POWER ADAPTER HOTPLUG — PCIe ASPM, CPU power limits, EPP, platform profile
   # ═══════════════════════════════════════════════════════════════════════
-  services.udev.extraRules = ''
-    # AC plugged in → PCIe max performance + trigger refresh
-    SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="1", \
-      RUN+="${pkgs.bash}/bin/bash -c 'echo performance > /sys/module/pcie_aspm/parameters/policy; touch /tmp/power-supply-event; chown gc:users /tmp/power-supply-event'"
+  services.udev.extraRules = let
+    thermal-script = pkgs.writeShellScript "thermal-hotplug" ''
+      set -eu
+      RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
 
-    # AC unplugged → PCIe max power saving + trigger refresh
+      if [ "$1" = "ac" ]; then
+        echo performance       > /sys/module/pcie_aspm/parameters/policy
+        echo 80000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 115000000         > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+        echo balanced          > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+          [ -f "$c" ] && echo balance_performance > "$c" || true
+        done
+      else
+        echo powersupersave    > /sys/module/pcie_aspm/parameters/policy
+        echo 20000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 35000000          > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+        echo quiet             > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+          [ -f "$c" ] && echo power > "$c" || true
+        done
+      fi
+
+      touch /tmp/power-supply-event
+      chown gc:users /tmp/power-supply-event
+    '';
+  in ''
+    # AC plugged in → performance mode
+    SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="1", \
+      RUN+="${thermal-script} ac"
+
+    # AC unplugged → max battery life
     SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="0", \
-      RUN+="${pkgs.bash}/bin/bash -c 'echo powersupersave > /sys/module/pcie_aspm/parameters/policy; touch /tmp/power-supply-event; chown gc:users /tmp/power-supply-event'"
+      RUN+="${thermal-script} battery"
   '';
 
   # ═══════════════════════════════════════════════════════════════════════
@@ -374,9 +400,9 @@
   # balance_performance on all cores, switch platform profile to balanced.
   # ═══════════════════════════════════════════════════════════════════════
 
-  # Boot-time: set RAPL caps + EPP before login
+  # Boot-time: set RAPL caps + EPP based on AC status (before login)
   systemd.services.cpu-thermal-mgmt = {
-    description = "Cap CPU power limits and set balanced EPP to prevent thermal throttling";
+    description = "Cap CPU power limits and set EPP based on AC status";
     after = [ "multi-user.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
@@ -384,23 +410,42 @@
       RemainAfterExit = true;
     };
     script = ''
-      # Cap RAPL power limits — 80W PL1 (sustained), 115W PL2 (burst)
-      RAPL_DIR="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
-      if [ -f "$RAPL_DIR/constraint_0_power_limit_uw" ]; then
-        echo 80000000 > "$RAPL_DIR/constraint_0_power_limit_uw"   # PL1: 80W
-        echo 115000000 > "$RAPL_DIR/constraint_1_power_limit_uw"  # PL2: 115W
-      fi
+      RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
 
-      # Set energy_performance_preference to balance_performance on all CPUs
-      for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-        [ -f "$cpu" ] && echo balance_performance > "$cpu" || true
+      # Check if on AC power
+      on_ac=0
+      for psu in /sys/class/power_supply/*/type; do
+        if [ "$(cat "$psu" 2>/dev/null)" = "Mains" ]; then
+          online="$(echo "$psu" | sed 's|/type||')/online"
+          if [ "$(cat "$online" 2>/dev/null)" = "1" ]; then
+            on_ac=1; break
+          fi
+        fi
       done
+
+      if [ "$on_ac" = "1" ]; then
+        # AC: gaming-ready — PL1=80W, balanced profile, balance_performance EPP
+        echo 80000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 115000000 > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+        echo balanced  > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+          [ -f "$c" ] && echo balance_performance > "$c" || true
+        done
+      else
+        # Battery: max life — PL1=20W, quiet profile, power EPP
+        echo 20000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 35000000  > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+        echo quiet     > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+          [ -f "$c" ] && echo power > "$c" || true
+        done
+      fi
     '';
   };
 
-  # Post-login: set ASUS platform profile + EPP (after asusd + graphical session)
+  # Post-login: enforce profile + EPP (after asusd + graphical session)
   systemd.services.cpu-thermal-profile = {
-    description = "Switch ASUS platform profile to balanced and set EPP after asusd starts";
+    description = "Enforce platform profile and EPP after asusd starts";
     after = [ "asusd.service" "graphical.target" ];
     wantedBy = [ "graphical.target" ];
     serviceConfig = {
@@ -408,12 +453,27 @@
       RemainAfterExit = true;
     };
     script = ''
-      if [ -f /sys/firmware/acpi/platform_profile ]; then
-        echo balanced > /sys/firmware/acpi/platform_profile || true
-      fi
-      for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-        [ -f "$cpu" ] && echo balance_performance > "$cpu" || true
+      on_ac=0
+      for psu in /sys/class/power_supply/*/type; do
+        if [ "$(cat "$psu" 2>/dev/null)" = "Mains" ]; then
+          online="$(echo "$psu" | sed 's|/type||')/online"
+          if [ "$(cat "$online" 2>/dev/null)" = "1" ]; then
+            on_ac=1; break
+          fi
+        fi
       done
+
+      if [ "$on_ac" = "1" ]; then
+        echo balanced > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+          [ -f "$c" ] && echo balance_performance > "$c" || true
+        done
+      else
+        echo quiet > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+          [ -f "$c" ] && echo power > "$c" || true
+        done
+      fi
     '';
   };
 
@@ -426,16 +486,32 @@
       Type = "oneshot";
     };
     script = ''
-      RAPL_DIR="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
-      if [ -f "$RAPL_DIR/constraint_0_power_limit_uw" ]; then
-        echo 80000000 > "$RAPL_DIR/constraint_0_power_limit_uw"
-        echo 115000000 > "$RAPL_DIR/constraint_1_power_limit_uw"
-      fi
-      for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-        [ -f "$cpu" ] && echo balance_performance > "$cpu" || true
+      RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
+
+      on_ac=0
+      for psu in /sys/class/power_supply/*/type; do
+        if [ "$(cat "$psu" 2>/dev/null)" = "Mains" ]; then
+          online="$(echo "$psu" | sed 's|/type||')/online"
+          if [ "$(cat "$online" 2>/dev/null)" = "1" ]; then
+            on_ac=1; break
+          fi
+        fi
       done
-      if [ -f /sys/firmware/acpi/platform_profile ]; then
-        echo balanced > /sys/firmware/acpi/platform_profile || true
+
+      if [ "$on_ac" = "1" ]; then
+        echo 80000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 115000000 > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+        echo balanced  > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+          [ -f "$c" ] && echo balance_performance > "$c" || true
+        done
+      else
+        echo 20000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 35000000  > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+        echo quiet     > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+          [ -f "$c" ] && echo power > "$c" || true
+        done
       fi
     '';
   };
