@@ -162,7 +162,6 @@
     shanggu-fonts
 
     aider-chat
-
   ];
 
   # ── Proton GE (declarative Steam compatibility tool) ──────────────────
@@ -273,7 +272,6 @@
       alias top="btm"
       alias htop="btm"
       alias curl="xh"
-      alias gemini = "aider --model gemini --yes --auto-commits"
 
       # ── Colors ──────────────────────────────────────────────────────
       # Less colors (terminal pager)
