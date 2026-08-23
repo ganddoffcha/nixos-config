@@ -161,7 +161,8 @@
     font-awesome
     shanggu-fonts
 
-    aider-chat
+    # Replace the broken aider override with pipx
+    pipx
     google-cloud-sdk
   ];
 
@@ -274,6 +275,9 @@
       alias htop="btm"
       alias curl="xh"
 
+    # ── Aider AI ─────────────────────────────────────────────────────
+    alias aider="aider --model vertex_ai/gemini-3.1-pro-preview --yes --auto-commits"
+
       # ── Colors ──────────────────────────────────────────────────────
       # Less colors (terminal pager)
       export LESS=R
@@ -353,8 +357,14 @@
   # ═══════════════════════════════════════════════════════════════════════
   home.sessionPath = [
     "$HOME/scripts"
+    "$HOME/.local/bin" # <-- Add this line so your shell can find pipx binaries
+
   ];
   home.sessionVariables = {
+    # ── NTU Gemini Enterprise ───────────────────────────────────────────
+    VERTEXAI_PROJECT = "gcp-ntu-gemini-ent-a0ce";
+    VERTEXAI_LOCATION = "asia-southeast1";
+
     EDITOR = "nvim";
     VISUAL = "nvim";
     TERMINAL = "ghostty";
@@ -695,6 +705,17 @@
   # Also bootstrap hypridle-active.conf on first install.
   # ═══════════════════════════════════════════════════════════════════════
   home.activation = lib.mkAfter {
+      setupAiderPipx = ''
+      export PATH="${pkgs.pipx}/bin:$HOME/.local/bin:$PATH"
+
+      # Check if aider is already installed by pipx; if not, install and inject
+      if ! pipx list | grep -q "aider-chat"; then
+        echo "Installing Aider via pipx..."
+        $DRY_RUN_CMD pipx install aider-chat
+        echo "Injecting Vertex AI dependencies..."
+        $DRY_RUN_CMD pipx inject aider-chat google-cloud-aiplatform
+      fi
+    '';
     autoRefresh = ''
       if [ -x "$HOME/scripts/auto-refresh" ]; then
         "$HOME/scripts/auto-refresh" || true
