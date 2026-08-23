@@ -316,8 +316,8 @@ in
       alias curl="xh"
 
       # ── Aider AI ─────────────────────────────────────────────────────
-      alias aider-gemini="aider --model vertex_ai/gemini-3.1-pro-preview --yes --auto-commits"
-      alias aider-deepseek="aider --model deepseek/deepseek-coder --yes --auto-commits"
+      #alias aider-gemini="aider --model vertex_ai/gemini-3.1-pro-preview --yes --auto-commits"
+      alias aider="aider --model deepseek/deepseek-v4-pro --yes --auto-commits"
 
       # ── Colors ──────────────────────────────────────────────────────
       # Less colors (terminal pager)
