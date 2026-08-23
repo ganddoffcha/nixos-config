@@ -1,5 +1,45 @@
 { config, lib, pkgs, ... }:
 
+let
+  # Create a self-contained, Ubuntu-like bubble just for Aider
+  aiderVertex = pkgs.buildFHSEnv {
+    name = "aider";
+    targetPkgs = p: (with p; [
+      python311
+      python311Packages.pip
+      python311Packages.virtualenv
+      zlib
+      glib
+      gcc
+      stdenv.cc.cc.lib
+      git
+    ]);
+    runScript = pkgs.writeShellScript "aider-run" ''
+      VENV="$HOME/.cache/aider-vertex-venv"
+
+      # If the virtual environment doesn't exist, create it and install via pip
+      if [ ! -d "$VENV" ]; then
+        echo "First run: Downloading build tools, Aider, and Vertex AI..."
+        # Explicitly use Python 3.11 here
+        ${pkgs.python311}/bin/python3.11 -m venv "$VENV"
+
+        # Install build tools first
+        "$VENV/bin/pip" install --quiet --upgrade pip setuptools wheel
+
+        # Then install Aider and the Google Cloud library
+        "$VENV/bin/pip" install --quiet aider-chat google-cloud-aiplatform
+      fi
+
+      # Hardcode your NTU credentials
+      export VERTEXAI_PROJECT="gcp-ntu-gemini-ent-a0ce"
+      export VERTEXAI_LOCATION="asia-southeast1"
+
+      # Launch Aider (model is passed dynamically via aliases)
+      exec "$VENV/bin/aider" "$@"
+    '';
+  };
+in
+
 {
   # Allow unfree packages (vscode, spotify, etc.)
   nixpkgs.config.allowUnfree = true;
@@ -161,8 +201,8 @@
     font-awesome
     shanggu-fonts
 
-    # Replace the broken aider override with pipx
-    pipx
+    # Inject the Google Cloud Vertex AI dependency directly into Aider
+    aiderVertex
     google-cloud-sdk
   ];
 
@@ -275,8 +315,9 @@
       alias htop="btm"
       alias curl="xh"
 
-    # ── Aider AI ─────────────────────────────────────────────────────
-    alias aider="aider --model vertex_ai/gemini-3.1-pro-preview --yes --auto-commits"
+      # ── Aider AI ─────────────────────────────────────────────────────
+      alias aider-gemini="aider --model vertex_ai/gemini-3.1-pro-preview --yes --auto-commits"
+      alias aider-deepseek="aider --model deepseek/deepseek-coder --yes --auto-commits"
 
       # ── Colors ──────────────────────────────────────────────────────
       # Less colors (terminal pager)
@@ -357,14 +398,8 @@
   # ═══════════════════════════════════════════════════════════════════════
   home.sessionPath = [
     "$HOME/scripts"
-    "$HOME/.local/bin" # <-- Add this line so your shell can find pipx binaries
-
   ];
   home.sessionVariables = {
-    # ── NTU Gemini Enterprise ───────────────────────────────────────────
-    VERTEXAI_PROJECT = "gcp-ntu-gemini-ent-a0ce";
-    VERTEXAI_LOCATION = "asia-southeast1";
-
     EDITOR = "nvim";
     VISUAL = "nvim";
     TERMINAL = "ghostty";
@@ -705,17 +740,6 @@
   # Also bootstrap hypridle-active.conf on first install.
   # ═══════════════════════════════════════════════════════════════════════
   home.activation = lib.mkAfter {
-      setupAiderPipx = ''
-      export PATH="${pkgs.pipx}/bin:$HOME/.local/bin:$PATH"
-
-      # Check if aider is already installed by pipx; if not, install and inject
-      if ! pipx list | grep -q "aider-chat"; then
-        echo "Installing Aider via pipx..."
-        $DRY_RUN_CMD pipx install aider-chat
-        echo "Injecting Vertex AI dependencies..."
-        $DRY_RUN_CMD pipx inject aider-chat google-cloud-aiplatform
-      fi
-    '';
     autoRefresh = ''
       if [ -x "$HOME/scripts/auto-refresh" ]; then
         "$HOME/scripts/auto-refresh" || true
