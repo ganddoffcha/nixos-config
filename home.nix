@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  # Create a self-contained, Ubuntu-like bubble just for Aider
   aiderVertex = pkgs.buildFHSEnv {
     name = "aider";
     targetPkgs = p: (with p; [
@@ -17,24 +16,18 @@ let
     runScript = pkgs.writeShellScript "aider-run" ''
       VENV="$HOME/.cache/aider-vertex-venv"
 
-      # If the virtual environment doesn't exist, create it and install via pip
+      # Download Aider and Vertex AI quietly on the first run
       if [ ! -d "$VENV" ]; then
-        echo "First run: Downloading build tools, Aider, and Vertex AI..."
-        # Explicitly use Python 3.11 here
         ${pkgs.python311}/bin/python3.11 -m venv "$VENV"
-
-        # Install build tools first
         "$VENV/bin/pip" install --quiet --upgrade pip setuptools wheel
-
-        # Then install Aider and the Google Cloud library
         "$VENV/bin/pip" install --quiet aider-chat google-cloud-aiplatform
       fi
 
-      # Hardcode your NTU credentials
+      # NTU Gemini Credentials (ready for when IT enables the API)
       export VERTEXAI_PROJECT="gcp-ntu-gemini-ent-a0ce"
       export VERTEXAI_LOCATION="asia-southeast1"
 
-      # Launch Aider (model is passed dynamically via aliases)
+      # Launch Aider dynamically
       exec "$VENV/bin/aider" "$@"
     '';
   };
@@ -315,9 +308,14 @@ in
       alias htop="btm"
       alias curl="xh"
 
-      # ── Aider AI ─────────────────────────────────────────────────────
-      #alias aider-gemini="aider --model vertex_ai/gemini-3.1-pro-preview --yes --auto-commits"
-      alias aider="aider --model deepseek/deepseek-v4-pro --yes --auto-commits"
+    # ── API Keys ─────────────────────────────────────────────────────
+    if [ -f "$HOME/.config/secrets/deepseek_key" ]; then
+      export DEEPSEEK_API_KEY="$(cat "$HOME/.config/secrets/deepseek_key")"
+    fi
+
+    # ── Aider AI ─────────────────────────────────────────────────────
+    alias deepseek="aider --model deepseek/deepseek-v4-pro --yes --auto-commits"
+    alias gemini="aider --model vertex_ai/gemini-3.1-pro-preview --yes --auto-commits"
 
       # ── Colors ──────────────────────────────────────────────────────
       # Less colors (terminal pager)
