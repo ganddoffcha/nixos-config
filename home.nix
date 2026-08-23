@@ -162,6 +162,7 @@
     shanggu-fonts
 
     aider-chat
+    google-cloud-sdk
   ];
 
   # ── Proton GE (declarative Steam compatibility tool) ──────────────────

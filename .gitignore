@@ -80,3 +80,4 @@ dotfiles/scripts/hotspot
 .gtkrc-2.0
 .themes/
 Desktop/
+.aider*
