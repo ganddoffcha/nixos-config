@@ -95,6 +95,12 @@ in
   };
   home-manager.backupFileExtension = "backup";
 
+  # Lockscreen PAM service for hyprlock. Without this, hyprlock falls back to
+  # the 'su' PAM stack (pam_rootok + pam_faillock + pam_unix likeauth
+  # try_first_pass), which rejects the first unlock attempt — forcing a
+  # reboot when locked out.
+  security.pam.services.hyprlock = {};
+
   # ═══════════════════════════════════════════════════════════════════════
   # CONSOLE — Catppuccin Mocha TTY colors
   # ═══════════════════════════════════════════════════════════════════════
