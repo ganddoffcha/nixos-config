@@ -290,9 +290,25 @@
       set -eu
       RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
 
-      if [ "$1" = "ac" ]; then
+      # ── Detect AC ─────────────────────────────────────────────────────
+      # Ground truth: Mains-type online flags OR battery EC status.
+      # ADP0's online flag can be stuck at 0 on this ASUS (hibernate/resume
+      # EC quirk) while the battery EC reports "Charging" — so the battery
+      # status must be included as a fallback signal.
+      on_ac=0
+      for psu in /sys/class/power_supply/*/; do
+        t="$(cat "$psu/type" 2>/dev/null || true)"
+        if [ "$t" = "Mains" ] && [ "$(cat "$psu/online" 2>/dev/null)" = "1" ]; then
+          on_ac=1
+        elif [ "$t" = "Battery" ]; then
+          st="$(cat "$psu/status" 2>/dev/null || true)"
+          [ "$st" = "Charging" ] || [ "$st" = "Full" ] && on_ac=1
+        fi
+      done
+
+      if [ "$on_ac" = "1" ]; then
         echo performance       > /sys/module/pcie_aspm/parameters/policy
-        echo 80000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+        echo 45000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
         echo 115000000         > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
         echo balanced          > /sys/firmware/acpi/platform_profile 2>/dev/null || true
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
@@ -312,13 +328,11 @@
       chown gc:users /tmp/power-supply-event
     '';
   in ''
-    # AC plugged in → performance mode
-    SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="1", \
-      RUN+="${thermal-script} ac"
-
-    # AC unplugged → max battery life
-    SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="0", \
-      RUN+="${thermal-script} battery"
+    # Power source change (plug/unplug, battery status change) → re-apply
+    # thermal policy. Script self-detects AC — do NOT trust POWER_SUPPLY_ONLINE
+    # (ADP0 online can be stuck at 0 on this ASUS).
+    SUBSYSTEM=="power_supply", ATTR{status}=="?*", RUN+="${thermal-script}"
+    SUBSYSTEM=="power_supply", ATTR{online}=="?*", RUN+="${thermal-script}"
   '';
 
   # ═══════════════════════════════════════════════════════════════════════

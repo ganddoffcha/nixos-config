@@ -23,6 +23,15 @@ ac_online() {
             return 0
         fi
     done
+    # Fallback: battery EC status. ADP0's online flag can be stuck at 0 on
+    # this ASUS (hibernate/resume EC quirk) while the battery EC reports
+    # "Charging" — trust the EC over the ACPI online flag.
+    for bat in /sys/class/power_supply/*/; do
+        if [ "$(cat "$bat/type" 2>/dev/null)" = "Battery" ]; then
+            st="$(cat "$bat/status" 2>/dev/null)"
+            [ "$st" = "Charging" ] || [ "$st" = "Full" ] && return 0
+        fi
+    done
     return 1
 }
 
@@ -107,7 +116,7 @@ fi
 
 # Check if animations are in the expected state (survives Hyprland reloads
 # during nixos-rebuild which reset keywords to hyprland.conf defaults).
-actual_anim=$(hyprctl getoption animations:enabled 2>/dev/null | head -1)
+actual_anim=$(hyprctl getoption animations:enabled 2>/dev/null | sed -n 's/^int: //p' | head -1)
 expected_anim="0"
 if [ "$desired" = "charger" ]; then
     expected_anim="1"
