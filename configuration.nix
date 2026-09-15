@@ -1,5 +1,80 @@
 { config, lib, pkgs, inputs, ... }:
 
+let
+  # ═══════════════════════════════════════════════════════════════════════
+  # POWER ADAPTER HOTPLUG — PCIe ASPM, CPU power limits, EPP, platform profile
+  # ═══════════════════════════════════════════════════════════════════════
+  #
+  # AC detection: Mains-type online flags OR battery EC status. Two hardware
+  # quirks on this ASUS make udev alone unreliable:
+  #   1. ADP0's POWER_SUPPLY_ONLINE is stuck at 0 (ACPI AC driver always
+  #      reports offline, even when charging).
+  #   2. The kernel emits NO uevent for the Discharging→Charging transition,
+  #      so AC plug-in is invisible to udev.
+  # The systemd timer below polls every 30s as a fallback (stamp-guarded,
+  # writes only on state change).
+  thermal-hotplug = pkgs.writeShellScript "thermal-hotplug" ''
+    set -eu
+    RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
+    STAMP="/tmp/thermal-hotplug-state"
+
+    on_ac=0
+    for psu in /sys/class/power_supply/*/; do
+      t="$(cat "$psu/type" 2>/dev/null || true)"
+      if [ "$t" = "Mains" ] && [ "$(cat "$psu/online" 2>/dev/null)" = "1" ]; then
+        on_ac=1
+      elif [ "$t" = "Battery" ]; then
+        st="$(cat "$psu/status" 2>/dev/null || true)"
+        [ "$st" = "Charging" ] || [ "$st" = "Full" ] && on_ac=1
+      fi
+    done
+
+    state="battery"
+    [ "$on_ac" = "1" ] && state="ac"
+
+    # Idempotency guard — poller runs every 30s; only act on transitions.
+    # Also self-heal: if something external (e.g. asusd setting Performance,
+    # which triggers the firmware 200W PL1 MSR write) overrode the profile
+    # or power limit, re-apply ours.
+    stamp="$(cat "$STAMP" 2>/dev/null || true)"
+    prof="$(cat /sys/firmware/acpi/platform_profile 2>/dev/null || true)"
+    pl1="$(cat "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true)"
+    expect_prof="quiet"; expect_pl1="20000000"
+    [ "$state" = "ac" ] && { expect_prof="balanced"; expect_pl1="45000000"; }
+    if [ "$stamp" = "$state" ] && [ "$prof" = "$expect_prof" ] && \
+       [ "$pl1" = "$expect_pl1" ]; then
+      exit 0
+    fi
+
+    if [ "$on_ac" = "1" ]; then
+      echo performance       > /sys/module/pcie_aspm/parameters/policy
+      echo 45000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+      echo 115000000         > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+      echo balanced          > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+      for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+        [ -f "$c" ] && echo performance > "$c" || true
+      done
+      for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+        [ -f "$c" ] && echo balance_performance > "$c" || true
+      done
+    else
+      echo powersupersave    > /sys/module/pcie_aspm/parameters/policy
+      echo 20000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
+      echo 35000000          > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
+      echo quiet             > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+      for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+        [ -f "$c" ] && echo powersave > "$c" || true
+      done
+      for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+        [ -f "$c" ] && echo power > "$c" || true
+      done
+    fi
+
+    echo "$state" > "$STAMP"
+    touch /tmp/power-supply-event
+    chown gc:users /tmp/power-supply-event
+  '';
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -283,57 +358,34 @@
   };
 
   # ═══════════════════════════════════════════════════════════════════════
-  # POWER ADAPTER HOTPLUG — PCIe ASPM, CPU power limits, EPP, platform profile
+  # POWER ADAPTER HOTPLUG — instant trigger via udev + 30s poller fallback
   # ═══════════════════════════════════════════════════════════════════════
-  services.udev.extraRules = let
-    thermal-script = pkgs.writeShellScript "thermal-hotplug" ''
-      set -eu
-      RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
-
-      # ── Detect AC ─────────────────────────────────────────────────────
-      # Ground truth: Mains-type online flags OR battery EC status.
-      # ADP0's online flag can be stuck at 0 on this ASUS (hibernate/resume
-      # EC quirk) while the battery EC reports "Charging" — so the battery
-      # status must be included as a fallback signal.
-      on_ac=0
-      for psu in /sys/class/power_supply/*/; do
-        t="$(cat "$psu/type" 2>/dev/null || true)"
-        if [ "$t" = "Mains" ] && [ "$(cat "$psu/online" 2>/dev/null)" = "1" ]; then
-          on_ac=1
-        elif [ "$t" = "Battery" ]; then
-          st="$(cat "$psu/status" 2>/dev/null || true)"
-          [ "$st" = "Charging" ] || [ "$st" = "Full" ] && on_ac=1
-        fi
-      done
-
-      if [ "$on_ac" = "1" ]; then
-        echo performance       > /sys/module/pcie_aspm/parameters/policy
-        echo 45000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
-        echo 115000000         > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
-        echo balanced          > /sys/firmware/acpi/platform_profile 2>/dev/null || true
-        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-          [ -f "$c" ] && echo balance_performance > "$c" || true
-        done
-      else
-        echo powersupersave    > /sys/module/pcie_aspm/parameters/policy
-        echo 20000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
-        echo 35000000          > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
-        echo quiet             > /sys/firmware/acpi/platform_profile 2>/dev/null || true
-        for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-          [ -f "$c" ] && echo power > "$c" || true
-        done
-      fi
-
-      touch /tmp/power-supply-event
-      chown gc:users /tmp/power-supply-event
-    '';
-  in ''
+  services.udev.extraRules = ''
     # Power source change (plug/unplug, battery status change) → re-apply
     # thermal policy. Script self-detects AC — do NOT trust POWER_SUPPLY_ONLINE
-    # (ADP0 online can be stuck at 0 on this ASUS).
-    SUBSYSTEM=="power_supply", ATTR{status}=="?*", RUN+="${thermal-script}"
-    SUBSYSTEM=="power_supply", ATTR{online}=="?*", RUN+="${thermal-script}"
+    # (ADP0 online is stuck at 0 on this ASUS).
+    SUBSYSTEM=="power_supply", ATTR{status}=="?*", RUN+="${thermal-hotplug}"
+    SUBSYSTEM=="power_supply", ATTR{online}=="?*", RUN+="${thermal-hotplug}"
   '';
+
+  # Poller fallback — the kernel emits no uevent for Discharging→Charging,
+  # so AC plug-in is invisible to udev. Re-checks every 30s.
+  systemd.services.thermal-hotplug-poll = {
+    description = "Thermal power policy poller (fallback for flaky AC uevents)";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${thermal-hotplug}";
+    };
+  };
+
+  systemd.timers.thermal-hotplug-poll = {
+    description = "Poll thermal power policy every 30s";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "30s";
+      OnUnitActiveSec = "30s";
+    };
+  };
 
   # ═══════════════════════════════════════════════════════════════════════
   # SWAP — zram (compressed RAM) + disk swap for hibernation
@@ -467,14 +519,16 @@
     script = ''
       RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
 
-      # Check if on AC power
+      # Check if on AC power — Mains online OR battery EC status
+      # (ADP0 online is stuck at 0 on this ASUS).
       on_ac=0
-      for psu in /sys/class/power_supply/*/type; do
-        if [ "$(cat "$psu" 2>/dev/null)" = "Mains" ]; then
-          online="$(echo "$psu" | sed 's|/type||')/online"
-          if [ "$(cat "$online" 2>/dev/null)" = "1" ]; then
-            on_ac=1; break
-          fi
+      for psu in /sys/class/power_supply/*/; do
+        t="$(cat "$psu/type" 2>/dev/null || true)"
+        if [ "$t" = "Mains" ] && [ "$(cat "$psu/online" 2>/dev/null)" = "1" ]; then
+          on_ac=1
+        elif [ "$t" = "Battery" ]; then
+          st="$(cat "$psu/status" 2>/dev/null || true)"
+          [ "$st" = "Charging" ] || [ "$st" = "Full" ] && on_ac=1
         fi
       done
 
@@ -518,13 +572,15 @@
     script = ''
       RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
 
+      # Mains online OR battery EC status (ADP0 online stuck at 0 on ASUS).
       on_ac=0
-      for psu in /sys/class/power_supply/*/type; do
-        if [ "$(cat "$psu" 2>/dev/null)" = "Mains" ]; then
-          online="$(echo "$psu" | sed 's|/type||')/online"
-          if [ "$(cat "$online" 2>/dev/null)" = "1" ]; then
-            on_ac=1; break
-          fi
+      for psu in /sys/class/power_supply/*/; do
+        t="$(cat "$psu/type" 2>/dev/null || true)"
+        if [ "$t" = "Mains" ] && [ "$(cat "$psu/online" 2>/dev/null)" = "1" ]; then
+          on_ac=1
+        elif [ "$t" = "Battery" ]; then
+          st="$(cat "$psu/status" 2>/dev/null || true)"
+          [ "$st" = "Charging" ] || [ "$st" = "Full" ] && on_ac=1
         fi
       done
 
@@ -564,13 +620,15 @@
     script = ''
       RAPL="/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0"
 
+      # Mains online OR battery EC status (ADP0 online stuck at 0 on ASUS).
       on_ac=0
-      for psu in /sys/class/power_supply/*/type; do
-        if [ "$(cat "$psu" 2>/dev/null)" = "Mains" ]; then
-          online="$(echo "$psu" | sed 's|/type||')/online"
-          if [ "$(cat "$online" 2>/dev/null)" = "1" ]; then
-            on_ac=1; break
-          fi
+      for psu in /sys/class/power_supply/*/; do
+        t="$(cat "$psu/type" 2>/dev/null || true)"
+        if [ "$t" = "Mains" ] && [ "$(cat "$psu/online" 2>/dev/null)" = "1" ]; then
+          on_ac=1
+        elif [ "$t" = "Battery" ]; then
+          st="$(cat "$psu/status" 2>/dev/null || true)"
+          [ "$st" = "Charging" ] || [ "$st" = "Full" ] && on_ac=1
         fi
       done
 
