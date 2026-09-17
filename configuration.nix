@@ -314,8 +314,14 @@ in
   # balance_performance setting with BalancePower, keeping CPU in low-power
   # frequency mode even on AC. BalancePerformance lets the CPU clock up
   # when needed while still saving power at idle.
+  #
+  # mode = "0644" (NOT 0444): asusd opens this file read-WRITE to persist
+  # config, and the asusctl unit drops all capabilities (CapabilityBoundingSet
+  # empty, NoNewPrivileges) — root has no CAP_DAC_OVERRIDE, so a 0444 file
+  # fails open(O_RDWR) with EACCES → asusd panics and crash-loops → the 80%
+  # charge cap is never applied. 0644 lets owner-root write it back.
   environment.etc."asusd/asusd.ron" = {
-    mode = "0444";
+    mode = "0644";
     text = ''
       (
           charge_control_end_threshold: 80,
