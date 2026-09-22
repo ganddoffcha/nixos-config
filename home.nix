@@ -471,7 +471,9 @@ in
     general {
         lock_cmd = pidof hyprlock || hyprlock
         before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session
-        after_sleep_cmd = hyprctl dispatch dpms on
+        # Restart hyprlock on resume: hyprlock 0.9.6 freezes after suspend/hibernate
+        # (frozen frame, clock stuck, dead keyboard input -> forced reboot).
+        after_sleep_cmd = hyprctl dispatch dpms on; ${pkgs.procps}/bin/pkill -9 -x hyprlock; sleep 1; ${pkgs.systemd}/bin/loginctl lock-session
     }
 
     listener {
@@ -507,7 +509,9 @@ in
     general {
         lock_cmd = pidof hyprlock || hyprlock
         before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session
-        after_sleep_cmd = hyprctl dispatch dpms on
+        # Restart hyprlock on resume: hyprlock 0.9.6 freezes after suspend/hibernate
+        # (frozen frame, clock stuck, dead keyboard input -> forced reboot).
+        after_sleep_cmd = hyprctl dispatch dpms on; ${pkgs.procps}/bin/pkill -9 -x hyprlock; sleep 1; ${pkgs.systemd}/bin/loginctl lock-session
     }
   '';
   xdg.configFile."hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;
