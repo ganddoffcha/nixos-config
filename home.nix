@@ -524,6 +524,30 @@ in
   # waybar/style.css uses @import for accent — the imported file is writable.
   xdg.configFile."waybar/style.css".source = ./dotfiles/waybar/style.css;
 
+  # Waybar auto-start: override the package's waybar.service, which uses
+  # Requisite=graphical-session.target. With uwsm, Requisite is fragile —
+  # it fails the start when graphical-session.target isn't *already* active
+  # at the exact moment the unit is checked (a race that left the bar
+  # missing after relogin on 2026-09-28). Requires= pulls the target in and
+  # waits, matching the hyprpaper.service pattern which has always worked.
+  systemd.user.services.waybar = {
+    Unit = {
+      Description = "Highly customizable Wayland bar for Sway and Wlroots based compositors.";
+      PartOf = [ "graphical-session.target" ];
+      Requires = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.waybar}/bin/waybar";
+      ExecReload = "${pkgs.procps}/bin/kill -SIGUSR2 $MAINPID";
+      Restart = "on-failure";
+      Slice = "session.slice";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
   # ── Terminal ──────────────────────────────────────────────────────────
   xdg.configFile."kitty/kitty.conf".source = ./dotfiles/kitty/kitty.conf;
   xdg.configFile."ghostty/config".source = ./dotfiles/ghostty/config;
