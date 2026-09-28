@@ -464,9 +464,12 @@ in
   # Multi-theme runtime switching has been removed in favour of catppuccin/nix.
 
   # ── Hyprland ──────────────────────────────────────────────────────────
-  # hyprland.conf uses `source = ~/.config/catppuccin/hyprland-accent.conf`
-  # for the accent border colour — the sourced file is writable at runtime.
-  xdg.configFile."hypr/hyprland.conf".source = ./dotfiles/hypr/hyprland.conf;
+  # Hyprland 0.56+ prefers the Lua config format; the legacy .conf format
+  # is deprecated and will be removed in a future update.
+  # Accent border colour is applied imperatively at startup (exec-once reads
+  # ~/.config/catppuccin/current-accent-hex). User keybinds live in the
+  # writable ~/.config/hypr/bindings.lua (dofile'd by hyprland.lua).
+  xdg.configFile."hypr/hyprland.lua".source = ./dotfiles/hypr/hyprland.lua;
   xdg.configFile."hypr/hypridle.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
