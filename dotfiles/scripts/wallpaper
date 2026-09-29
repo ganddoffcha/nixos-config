@@ -85,7 +85,17 @@ hyprpaper_ipc() {
     local cmd="$1"
     local sock_dir="$XDG_RUNTIME_DIR/hypr"
     local instance sock
-    instance=$(ls "$sock_dir" 2>/dev/null | head -1)
+
+    # hyprpaper creates its IPC socket asynchronously after start — wait up
+    # to ~5s for it to appear instead of failing immediately (the login
+    # random-wallpaper service runs the same second hyprpaper starts).
+    local i
+    for i in $(seq 1 25); do
+        instance=$(ls "$sock_dir" 2>/dev/null | head -1)
+        [ -n "$instance" ] && [ -S "$sock_dir/$instance/.hyprpaper.sock" ] && break
+        sleep 0.2
+    done
+
     [ -z "$instance" ] && return 1
     sock="$sock_dir/$instance/.hyprpaper.sock"
     [ -S "$sock" ] || return 1
@@ -113,11 +123,14 @@ preload = $path
 wallpaper = ,$path
 EOF
 
-    # Apply live via IPC: preload → set wallpaper → unload old
-    hyprpaper_ipc "preload $path"
-    hyprpaper_ipc "wallpaper ,$path"
-    hyprpaper_ipc "unload all"
-    hyprpaper_ipc "preload $path"  # re-preload after unload all
+    # Apply live via IPC: preload → set wallpaper → unload old.
+    # Non-fatal (|| true): the new wallpaper is already persisted to
+    # hyprpaper.conf above, so if the socket is somehow still not ready we
+    # must not let `set -e` abort before accent detection runs.
+    hyprpaper_ipc "preload $path" || true
+    hyprpaper_ipc "wallpaper ,$path" || true
+    hyprpaper_ipc "unload all" || true
+    hyprpaper_ipc "preload $path" || true  # re-preload after unload all
 
     echo "Wallpaper: $image"
 }

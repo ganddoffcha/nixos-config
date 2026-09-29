@@ -332,7 +332,12 @@ in
           platform_profile_linked_epp: true,
           platform_profile_on_battery: Quiet,
           change_platform_profile_on_battery: true,
-          platform_profile_on_ac: Performance,
+          # Balanced (not Performance): Performance triggers the firmware
+          # PL1=200W MSR write and, via linked EPP, forces EPP=performance
+          # — both fight our own thermal services. Balanced keeps EPP at
+          # BalancePerformance, matching the AC policy set by
+          # cpu-thermal-profile / thermal-hotplug.
+          platform_profile_on_ac: Balanced,
           change_platform_profile_on_ac: true,
           profile_quiet_epp: Power,
           profile_balanced_epp: BalancePerformance,
@@ -364,9 +369,13 @@ in
   # ═══════════════════════════════════════════════════════════════════════
   # AUTO UPGRADE — only attempt when plugged in
   # ═══════════════════════════════════════════════════════════════════════
+  # Flake-based: the old channel path (nix-build '<nixpkgs/nixos>' + NIX_PATH
+  # nixos-config) died with the flake migration and made nixos-upgrade.service
+  # fail every boot ("nixos-config not found in Nix search path").
   system.autoUpgrade = {
     enable = true;
     allowReboot = false;
+    flake = "github:ganddoffcha/nixos-config#zephyrus";
   };
 
   # ═══════════════════════════════════════════════════════════════════════
@@ -570,9 +579,10 @@ in
     '';
   };
 
-  # Post-login: re-apply RAPL caps + governor + EPP (after asusd + graphical)
-  # asusd sets platform_profile_on_ac=Performance which triggers firmware
-  # PL1=200W MSR write. This service runs AFTER asusd to override PL1 back.
+  # Post-login: re-apply RAPL caps + governor + EPP (after asusd + graphical).
+  # asusd sets platform_profile_on_ac=Balanced now (see asusd.ron), so it no
+  # longer fights us; this still re-asserts the same caps as a guard against
+  # any profile re-application racing the firmware power-limit write.
   systemd.services.cpu-thermal-profile = {
     description = "Re-apply CPU thermal caps after asusd starts";
     after = [ "asusd.service" "graphical.target" ];

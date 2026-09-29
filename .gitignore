@@ -1,6 +1,8 @@
 
 # Application state (not config)
 .asdf/
+.copilot/
+.dotnet/
 .cache/
 .icons/
 .chessdb/
