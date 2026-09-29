@@ -6,7 +6,7 @@ Personal NixOS + [Home Manager](https://github.com/nix-community/home-manager) c
 
 | Component | Detail |
 |-----------|--------|
-| **Model** | ASUS Zephyrus (2024) |
+| **Model** | ASUS ROG Zephyrus G16 (GU603VV) |
 | **CPU** | Intel Core i7-13620H |
 | **GPU** | NVIDIA GeForce RTX 4060 (PRIME offload) |
 | **Display** | 2560×1600 @ 240Hz (Thermotrex TL160ADMP03-0) |
@@ -14,17 +14,19 @@ Personal NixOS + [Home Manager](https://github.com/nix-community/home-manager) c
 
 ## Features
 
-- **Hyprland** — Wayland compositor with animations, blur, and gaps
+- **Hyprland** — Wayland compositor (Lua config) with animations, blur, and gaps
 - **NVIDIA PRIME** — iGPU by default, NVIDIA for heavy workloads
 - **Catppuccin Mocha** — system-wide theme via [catppuccin/nix](https://github.com/catppuccin/nix) (terminal, TTY, GTK, Starship, Delta, Brave)
-- **Imperative accent** — `wallpaper <image>` auto-detects best Catppuccin accent from image colours, applies live via `hyprctl`
-- **Instant power profiles** — 240Hz + eye candy on AC, 60Hz + minimal on battery (udev-driven)
-- **PCIe ASPM** — `performance` on AC, `powersupersave` on battery (kernel-level)
+- **Imperative accent** — `wallpaper <image>` auto-detects the best Catppuccin accent from image colours and applies it live via `hyprctl`
+- **Instant power profiles** — 240Hz + eye candy on AC, 60Hz + minimal on battery (udev-driven, 30s timer fallback)
+- **CPU thermal caps** — RAPL PL1/PL2 + governor + EPP per power source (AC: 45W/115W, performance; battery: 20W/35W, power-save)
+- **Charge limit** — battery capped at 80% via asusd
 - **Hibernation on lid-close** — suspend-to-disk via systemd-logind
+- **Auto-upgrade** — flake-based `system.autoUpgrade`
 - **Declarative dotfiles** — configs in `dotfiles/`, managed by Home Manager
 - **bemenu** — wayland-native app launcher with dynamic theming
-- **LaTeX quick-start** — `texnow` creates a project in one command, `leopard.sty` provides 60+ macros, pdflatex-default with CJK toggle
-- **Auto-git** — `rebuild` script syncs → rebuilds → commits → pushes in one command
+- **LaTeX quick-start** — `texnow` creates a project in one command, `leopard.sty` provides 60+ macros, pdflatex default with CJK toggle
+- **Auto-git** — `rebuild` syncs → rebuilds → commits → pushes in one command
 - **POSIX shell** — `/bin/sh` is dash, all scripts are POSIX-clean
 
 ## Structure
@@ -36,23 +38,27 @@ Personal NixOS + [Home Manager](https://github.com/nix-community/home-manager) c
 ├── home.nix              # Home Manager user config (packages, dotfiles, systemd services)
 ├── hardware-configuration.nix  # Auto-generated — machine-specific
 ├── dotfiles/
-│   ├── hypr/             # Hyprland (WM), hypridle, hyprlock, hyprpaper
+│   ├── hypr/             # Hyprland (Lua config), hypridle, hyprlock, hyprpaper
 │   ├── waybar/           # Status bar (config + CSS)
 │   ├── ghostty/          # Terminal emulator (GPU-accelerated)
 │   ├── kitty/            # Terminal emulator (primary)
+│   ├── zsh/              # Shell config
 │   ├── nvim/             # Neovim (lazy.nvim, vimtex, lean.nvim, lsp)
 │   ├── mako/             # Notification daemon
 │   ├── gammastep/        # Blue light filter
 │   ├── yazi/             # Terminal file manager
+│   ├── qutebrowser/      # Web browser
 │   ├── zathura/          # PDF viewer (Catppuccin themed + dark-mode recolor)
 │   ├── mpv/              # Media player (vulkan, vaapi)
+│   ├── latexmk/          # latexmkrc
 │   ├── Code/             # VSCode keybindings & settings
 │   ├── scripts/          # Utility scripts (see below)
-│   ├── wallpapers/       # 12 wallpapers (picsum + personal)
+│   ├── wallpapers/       # 3 wallpapers
 │   ├── fonts/            # Google Sans + JuliaMono TTF files
 │   ├── current-accent    # Active Catppuccin accent (auto-detected from wallpaper)
 │   ├── mimeapps.list     # XDG MIME type associations
 │   ├── clinerules        # Zoo Code AI rules
+│   ├── CONTEXT.md        # Active project context (for AI)
 │   ├── memory-strategy.md
 │   └── SYSTEM.md         # Detailed system topology (for AI context)
 ├── README.md
@@ -88,13 +94,13 @@ All scripts in `~/scripts/` (POSIX sh, `-h` for help):
 | Script | Purpose |
 |--------|---------|
 | `rebuild` | NixOS rebuild + git commit + push |
-| `theme` | Instant theme switcher (runtime, no rebuild) |
-| `wallpaper` | Wallpaper setter + auto theme matcher |
+| `wallpaper` | Wallpaper setter + auto accent matcher |
+| `theme` | Theme stub — reports `catppuccin-mocha` (runtime switching removed) |
 | `compiler` | Multi-format document compiler (LaTeX, groff, md, etc.) |
 | `texnow` | Create new LaTeX project (TEXINPUTS-based, leopard.sty v3, pdflatex default) |
 | `opout` | Open compiled output (PDF → zathura) |
 | `getcomproot` | Find root file of multi-file projects |
-| `auto-refresh.sh` | Power profile auto-switcher (systemd service) |
+| `auto-refresh` | Power profile auto-switcher (systemd service) |
 | `toggle_touchpad` | Toggle laptop touchpad on/off |
 | `hotspot` | Start Wi-Fi hotspot |
 | `sp` | Launch Spotify (Wayland native) |
@@ -130,10 +136,10 @@ Projects use the canonical [`leopard.sty`](https://github.com/ganddoffcha/nixos-
 
 Plug/unplug your charger — the system switches instantly via udev:
 
-| State | Refresh | Animations | Blur | Shadows | PCIe ASPM |
-|-------|---------|------------|------|---------|------------|
-| **AC** | 240Hz | on | on | on | performance |
-| **Battery** | 60Hz | off | off | off | powersupersave |
+| State | Refresh | Animations | Blur | Shadows | PCIe ASPM | Governor | PL1/PL2 |
+|-------|---------|------------|------|---------|------------|----------|---------|
+| **AC** | 240Hz | on | on | on | performance | performance | 45W / 115W |
+| **Battery** | 60Hz | off | off | off | powersupersave | powersave | 20W / 35W |
 
 The 30-second timer is a fallback only. Kernel udev events handle the instant switch.
 
