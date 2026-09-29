@@ -314,6 +314,9 @@ in
   # balance_performance setting with BalancePower, keeping CPU in low-power
   # frequency mode even on AC. BalancePerformance lets the CPU clock up
   # when needed while still saving power at idle.
+  # platform_profile_on_ac is Balanced (not Performance): Performance triggers
+  # the firmware PL1=200W MSR write and, via linked EPP, forces EPP=performance
+  # — both fight our own thermal services.
   #
   # mode = "0644" (NOT 0444): asusd opens this file read-WRITE to persist
   # config, and the asusctl unit drops all capabilities (CapabilityBoundingSet
@@ -332,11 +335,6 @@ in
           platform_profile_linked_epp: true,
           platform_profile_on_battery: Quiet,
           change_platform_profile_on_battery: true,
-          # Balanced (not Performance): Performance triggers the firmware
-          # PL1=200W MSR write and, via linked EPP, forces EPP=performance
-          # — both fight our own thermal services. Balanced keeps EPP at
-          # BalancePerformance, matching the AC policy set by
-          # cpu-thermal-profile / thermal-hotplug.
           platform_profile_on_ac: Balanced,
           change_platform_profile_on_ac: true,
           profile_quiet_epp: Power,
