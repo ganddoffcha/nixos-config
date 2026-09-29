@@ -507,6 +507,12 @@ in
   systemd.services.home-manager-gc = {
     after = lib.mkForce [ "multi-user.target" ];
     wantedBy = lib.mkForce [ "multi-user.target" ];
+    # home-manager defaults Before=systemd-user-sessions.service, which is
+    # itself ordered After=multi-user.target — combined with `after` above
+    # this forms an ordering cycle that systemd breaks by deleting the
+    # systemd-user-sessions start job, leaving the manager "degraded".
+    # Force Before empty to break the cycle (deferral is still honored).
+    before = lib.mkForce [];
   };
 
   # ═══════════════════════════════════════════════════════════════════════
