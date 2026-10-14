@@ -169,6 +169,7 @@ in
     # ── Development ─────────────────────────────────────────────────────
     git
     gh
+    antigravity-cli  # Google Antigravity agentic TUI CLI (`agy`)
     python3
     elan
     openssl
