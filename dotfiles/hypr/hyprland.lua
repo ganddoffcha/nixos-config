@@ -23,7 +23,7 @@ hl.config({
 ------------------
 ---- MY PROGRAMS ----
 ------------------
-local terminal    = "kitty"
+local terminal    = "ghostty"
 local fileManager = terminal .. " -e yazi"
 local menu        = "~/scripts/bemenu-run"
 

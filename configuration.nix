@@ -153,7 +153,7 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 10;
   boot.loader.systemd-boot.editor = false;
-  boot.loader.timeout = 1;
+  boot.loader.timeout = 0;
 
   # Hibernation — resume from swapfile on root partition
   boot.resumeDevice = "/dev/disk/by-uuid/0e34ea3e-a813-4d7b-8b89-48b78b4fc5a9";
@@ -514,6 +514,11 @@ in
     # Force Before empty to break the cycle (deferral is still honored).
     before = lib.mkForce [];
   };
+
+  # NetworkManager-wait-online (7.773s on critical path) — halts multi-user.target
+  # and graphical.target waiting for IP association. NetworkManager connects
+  # asynchronously in background; desktop session does not need to block on it.
+  systemd.services.NetworkManager-wait-online.enable = false;
 
   # ═══════════════════════════════════════════════════════════════════════
   # CPU THERMAL MANAGEMENT — cap RAPL power limits + tune EPP

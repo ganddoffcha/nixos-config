@@ -47,6 +47,9 @@ audio/ogg=mpv.desktop
 # ── Directories → custom ghostty -e yazi wrapper ──
 inode/directory=file.desktop
 
+# ── Terminal ──
+x-scheme-handler/terminal=com.mitchellh.ghostty.desktop
+
 # ── Web / protocols ──
 x-scheme-handler/mailto=brave-browser.desktop
 x-scheme-handler/webcal=brave-browser.desktop

@@ -51,7 +51,7 @@ rebuild [-m "message"] [switch|boot|test|dry-build]
 
 - **WM**: Hyprland (Lua config `hyprland.lua`, launched via uwsm from `.zprofile`)
 - **Shell**: zsh with starship, zoxide, fzf, atuin
-- **Terminal**: kitty (primary), ghostty (secondary) — alacritty removed 2026-07-07
+- **Terminal**: ghostty (primary), kitty (secondary) — alacritty removed 2026-07-07
 - **Editor**: neovim (Lua config, vimtex, lean.nvim) + VSCode — emacs removed 2026-07-07
 - **Browser**: brave (primary), qutebrowser — chromium removed 2026-07-07
 - **Launcher**: bemenu (runtime theming via wrapper scripts)
