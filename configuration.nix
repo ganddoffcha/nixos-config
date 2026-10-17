@@ -374,6 +374,12 @@ in
     enable = true;
     allowReboot = false;
     flake = "github:ganddoffcha/nixos-config#zephyrus";
+    # Persistent=no: a missed weekly trigger must NOT run nixos-rebuild at boot.
+    # With the default persistent=true, every boot after a missed Monday 04:40
+    # schedule fires a full `nixos-rebuild switch` (~6s wall clock, 247M mem,
+    # network I/O) seconds after login. Upgrades still run weekly when the
+    # laptop is on at the scheduled time.
+    persistent = false;
   };
 
   # ═══════════════════════════════════════════════════════════════════════
