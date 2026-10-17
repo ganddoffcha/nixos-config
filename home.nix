@@ -170,6 +170,7 @@ in
     git
     gh
     antigravity-cli  # Google Antigravity agentic TUI CLI (`agy`)
+    antigravity-ide  # Google Antigravity IDE (VS Code fork, `antigravity-ide`)
     python3
     elan
     openssl
