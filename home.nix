@@ -475,10 +475,9 @@ in
   xdg.configFile."hypr/hypridle.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
-        before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session
-        # Restart hyprlock on resume: hyprlock 0.9.6 freezes after suspend/hibernate
-        # (frozen frame, clock stuck, dead keyboard input -> forced reboot).
-        after_sleep_cmd = hyprctl dispatch dpms on; ${pkgs.procps}/bin/pkill -9 -x hyprlock; sleep 1; ${pkgs.systemd}/bin/loginctl lock-session
+        # Ensure hyprlock has acquired the Wayland lock and created its render surface before sleeping
+        before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session; ${pkgs.coreutils}/bin/sleep 1
+        after_sleep_cmd = hyprctl dispatch dpms on
     }
 
     listener {
@@ -513,10 +512,8 @@ in
   xdg.configFile."hypr/hypridle-ac.conf".text = ''
     general {
         lock_cmd = pidof hyprlock || hyprlock
-        before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session
-        # Restart hyprlock on resume: hyprlock 0.9.6 freezes after suspend/hibernate
-        # (frozen frame, clock stuck, dead keyboard input -> forced reboot).
-        after_sleep_cmd = hyprctl dispatch dpms on; ${pkgs.procps}/bin/pkill -9 -x hyprlock; sleep 1; ${pkgs.systemd}/bin/loginctl lock-session
+        before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session; ${pkgs.coreutils}/bin/sleep 1
+        after_sleep_cmd = hyprctl dispatch dpms on
     }
   '';
   xdg.configFile."hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;

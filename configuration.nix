@@ -683,9 +683,24 @@ in
   };
 
   # ═══════════════════════════════════════════════════════════════════════
-  # NIX SETTINGS
+  # NIX SETTINGS & OPTIMIZATIONS
   # ═══════════════════════════════════════════════════════════════════════
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    trusted-users = [ "root" "@wheel" ];
+  };
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
+  nix.optimise.automatic = true;
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # SECURITY & SUDO
+  # ═══════════════════════════════════════════════════════════════════════
+  security.sudo.wheelNeedsPassword = false;
 
   system.stateVersion = "24.11";
 }
