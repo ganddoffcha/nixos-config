@@ -1,6 +1,6 @@
 # System Topology — zephyrus
 
-> Auto-injected context for Zoo. Documents the physical and logical layout of the system so Zoo doesn't make wrong assumptions about where files live, how the build pipeline works, or what hardware is present.
+> Auto-injected context for the AI Assistant / Antigravity. Documents the physical and logical layout of the system so the assistant doesn't make wrong assumptions about where files live, how the build pipeline works, or what hardware is present.
 
 ## Hardware
 
