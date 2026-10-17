@@ -62,7 +62,7 @@ sudo nixos-rebuild "$ACTION" --flake "$HOME/#zephyrus"
 cd "$REPO_DIR"
 
 # Stage only NixOS config files (avoids accidentally adding nested repos)
-git add configuration.nix home.nix dotfiles/ flake.lock hardware-configuration.nix .gitignore
+git add configuration.nix home.nix dotfiles/ flake.lock hardware-configuration.nix .gitignore AGENTS.md GEMINI.md
 
 # Only commit if there are changes
 if git diff --quiet --cached; then

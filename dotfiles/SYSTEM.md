@@ -64,6 +64,9 @@ rebuild [-m "message"] [switch|boot|test|dry-build]
 - **Auto-upgrade**: `system.autoUpgrade` flake-based (`github:ganddoffcha/nixos-config#zephyrus`)
 - **Hibernation**: lid-close → hibernate, resume from /swapfile (resume_device + resume_offset)
 - **Sleep**: S3 deep (mem_sleep_default=deep)
+- **Sudo / Root**: `security.sudo.wheelNeedsPassword = false` allows non-interactive root commands for wheel users.
+- **Nix Maintenance**: `trusted-users = ["root" "@wheel"]` (enables Cachix), weekly `nix.gc` (>14d), `nix.optimise.automatic = true`.
+- **Screen Lock**: `hyprlock` with `immediate_render = true`, `ignore_empty_input = true`, `no_fade_in = true`, native `$TIME`. `hypridle` runs `sleep 1` before suspend; `misc.allow_session_lock_restore = true` in `hyprland.lua`.
 
 ## Power & Thermal Architecture
 
@@ -90,14 +93,14 @@ Post-rebuild: home.activation runs auto-refresh (Hyprland config reload can rese
 - **DO NOT switch to `performance` platform profile** — firmware sets PL1 back to 200W and thermal-throttles. Use `balanced` + RAPL sysfs caps.
 - Note: on AC the EPP sysfs value reads `performance` (intel_pstate forces it under the `performance` governor) — expected and harmless; EPP only matters on battery.
 
-## Rules Zoo Must Follow
+## Rules The Assistant / Agent Must Follow
 
 1. **NEVER edit `/etc/nixos/` directly** — the system is flake-based; edits there have no effect. Edit `/home/gc/` (git repo) then `rebuild`.
 2. **`git add` new files before rebuild** — the flake only sees git-tracked files.
 3. **VSCode configs must NOT be home-manager managed** — Nix store symlinks are read-only. `settings.json`/`keybindings.json` live at `~/.config/Code/User/` as real files.
 4. **Use `rebuild`, not raw `nixos-rebuild`** — it handles git commit + push.
-5. **Ask before sudo** — Zoo must explicitly ask before running any sudo command.
-6. **RON configs use `//` comments, never `#`** — `#` is a Nix comment, invalid inside RON strings (e.g. asusd.ron).
+5. **RON configs use `//` comments, never `#`** — `#` is a Nix comment, invalid inside RON strings (e.g. asusd.ron).
+6. **Screen Lock Safety** — NEVER kill `hyprlock` with `pkill -9` on resume; breaking `ext-session-lock-v1` locks Hyprland focus permanently.
 
 ## Known Pitfalls
 
@@ -110,12 +113,13 @@ Post-rebuild: home.activation runs auto-refresh (Hyprland config reload can rese
 | Wrong power supply device for AC detection | Always thinks on battery | Use battery EC status (Charging/Full) fallback |
 | Forgetting resume_offset after swapfile recreation | Hibernation fails | `filefrag -v /swapfile`, update configuration.nix |
 | Hyprland config reload during rebuild | Refresh rate resets | auto-refresh runs in home.activation |
+| Hyprlock freeze on resume | Frozen frame, dead keyboard, forced reboot | Never pkill -9; ensure sleep 1 in before_sleep_cmd, ignore_empty_input/immediate_render in hyprlock.conf, and misc.allow_session_lock_restore in Hyprland |
 
 ## User Preferences
 
 - **Launcher**: bemenu (explicitly dislikes wofi)
-- **Workspace**: `/home/gc/Desktop/` is the active VSCode workspace; `~/` is the git repo / source of truth
+- **Workspace**: `/home/gc/` is the git repo / source of truth
 - **Editor**: neovim with Lua config
 - **Git**: descriptive commit messages preferred over auto-generated timestamps
-- **Memory**: expects Zoo to proactively remember system details without being reminded
+- **Memory**: expects the assistant to proactively remember system details without being reminded
 - **Power policy**: plugged in → performance; on battery → power save; charge cap 80%
