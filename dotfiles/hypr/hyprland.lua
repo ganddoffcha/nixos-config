@@ -33,7 +33,7 @@ local menu        = "~/scripts/bemenu-run"
 ----------------
 hl.on("hyprland.start", function()
     hl.exec_cmd("hyprctl setcursor Bibata-Modern-Classic 24")
-    hl.exec_cmd('[ -f ~/.config/catppuccin/current-accent-hex ] && hyprctl keyword general:col.active_border "rgba($(cat ~/.config/catppuccin/current-accent-hex)ff)"')
+    hl.exec_cmd([[ [ -f ~/.config/catppuccin/current-accent-hex ] && hyprctl eval "hl.config({ general = { ['col.active_border'] = 'rgba($(cat ~/.config/catppuccin/current-accent-hex)ff)' } })" ]])
 end)
 
 

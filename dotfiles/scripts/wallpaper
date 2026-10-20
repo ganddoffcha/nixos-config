@@ -80,57 +80,31 @@ best_accent() {
     echo "$best_name"
 }
 
-# ── Send command to hyprpaper IPC socket ────────────────────────────────
-hyprpaper_ipc() {
-    local cmd="$1"
-    local sock_dir="$XDG_RUNTIME_DIR/hypr"
-    local instance sock
-
-    # hyprpaper creates its IPC socket asynchronously after start — wait up
-    # to ~5s for it to appear instead of failing immediately (the login
-    # random-wallpaper service runs the same second hyprpaper starts).
-    local i
-    for i in $(seq 1 25); do
-        instance=$(ls "$sock_dir" 2>/dev/null | head -1)
-        [ -n "$instance" ] && [ -S "$sock_dir/$instance/.hyprpaper.sock" ] && break
-        sleep 0.2
-    done
-
-    [ -z "$instance" ] && return 1
-    sock="$sock_dir/$instance/.hyprpaper.sock"
-    [ -S "$sock" ] || return 1
-    python3 -c "
-import socket
-s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-s.connect('$sock')
-s.sendall(b'$cmd')
-resp = s.recv(1024)
-print(resp.decode().strip())
-s.close()
-" 2>/dev/null
+# ── Reload hyprpaper (it reads its config only at startup) ───────────────
+reload_hyprpaper() {
+    # hyprpaper 0.8+ speaks a binary (hyprwire) IPC protocol, so the
+    # reliable way to apply a config change live is a service restart.
+    # `systemctl --user restart` is idempotent and fast; waybar is an
+    # independent layer-shell client and is unaffected.
+    systemctl --user restart hyprpaper.service 2>/dev/null || \
+        systemctl --user start hyprpaper.service 2>/dev/null || true
 }
 
-# ── Set wallpaper via hyprpaper IPC (no restart → doesn't disrupt waybar) ─
+# ── Set wallpaper: write hyprpaper.conf (0.8+ format) + restart daemon ──
 set_wallpaper() {
     local image="$1"
     local path="$WALLPAPER_DIR/$image"
     [ -f "$path" ] || { echo "Wallpaper not found: $path" >&2; return 1; }
 
-    # Write config for persistence across reboots
+    # hyprpaper 0.8+ config format. "*" matches all monitors; fit_mode
+    # defaults to "cover" but is written explicitly for clarity.
     mkdir -p "$(dirname "$HYPRPAPER_CONF")"
     cat > "$HYPRPAPER_CONF" <<EOF
-preload = $path
-wallpaper = ,$path
+wallpaper[*]:path = $path
+wallpaper[*]:fit_mode = cover
 EOF
 
-    # Apply live via IPC: preload → set wallpaper → unload old.
-    # Non-fatal (|| true): the new wallpaper is already persisted to
-    # hyprpaper.conf above, so if the socket is somehow still not ready we
-    # must not let `set -e` abort before accent detection runs.
-    hyprpaper_ipc "preload $path" || true
-    hyprpaper_ipc "wallpaper ,$path" || true
-    hyprpaper_ipc "unload all" || true
-    hyprpaper_ipc "preload $path" || true  # re-preload after unload all
+    reload_hyprpaper
 
     echo "Wallpaper: $image"
 }
@@ -145,9 +119,10 @@ apply_accent() {
     echo -n "$hex" > "$STATE_DIR/current-accent-hex"
     echo "Accent: $accent (#$hex)"
 
-    # Hyprland: apply border colour live via hyprctl keyword
-    # (Hyprland 0.55+ uses general:col.active_border, not decoration:col.active_border)
-    hyprctl keyword general:col.active_border "rgba(${hex}ff)" 2>/dev/null || true
+    # Hyprland: apply border colour live. Since the Lua config migration
+    # (Hyprland 0.56+), `hyprctl keyword` is rejected with "use eval", so
+    # set the key through hl.config() via `hyprctl eval`.
+    hyprctl eval "hl.config({ general = { [\"col.active_border\"] = \"rgba(${hex}ff)\" } })" 2>/dev/null || true
 
     # Waybar accent is hardcoded in style.css (Nix store symlink) — needs rebuild to change.
     # We still write waybar-accent.css for future use, but don't reload waybar
@@ -199,9 +174,9 @@ case "${1:-}" in
         echo "  wallpaper -h            show this help"
         echo ""
         echo "State files in ~/.config/catppuccin/ — imperative, not git-tracked."
-        echo "Hyprland accent is applied live via hyprctl keyword."
+        echo "Hyprland accent is applied live via hyprctl eval (Lua config)."
         echo "Waybar accent requires a rebuild (hardcoded in style.css)."
-        echo "Wallpaper is applied live via hyprpaper IPC (no service restart)."
+        echo "Wallpaper is applied via a hyprpaper service restart."
         exit 0
         ;;
     -l|--list)
