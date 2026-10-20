@@ -158,6 +158,9 @@ in
   # Hibernation — resume from swapfile on root partition
   boot.resumeDevice = "/dev/disk/by-uuid/0e34ea3e-a813-4d7b-8b89-48b78b4fc5a9";
 
+  # Suspend-then-hibernate: after 60 min in S3, auto-hibernate (S4) for zero drain.
+  systemd.sleep.settings.Sleep.HibernateDelaySec = "60min";
+
   # Kernel parameters
   #   i8042.reset / kbdreset / atkbd.reset — fix keyboard after suspend/resume
   #   usbcore.autosuspend=-1 — prevent ASUS USB keyboard from disconnecting

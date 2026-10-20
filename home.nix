@@ -505,7 +505,7 @@ in
 
     listener {
         timeout = 1800
-        on-timeout = ${pkgs.systemd}/bin/systemctl suspend
+        on-timeout = ${pkgs.systemd}/bin/systemctl suspend-then-hibernate
     }
   '';
   # AC power config — no idle-triggered actions. Hibernate/suspend still locks.
