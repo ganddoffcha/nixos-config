@@ -746,6 +746,51 @@ in
     };
   };
 
+  # hyprpaper must be a systemd service (not a stale package symlink) —
+  # the old ~/.config/systemd/user/hyprpaper.service symlink pointed at a
+  # GC'd store path (hyprpaper-0.7.5), so systemd marked the unit "bad"
+  # and the wallpaper daemon never started. Declaring it here regenerates
+  # a correct unit on every rebuild.
+  systemd.user.services.hyprpaper = {
+    Unit = {
+      Description = "Fast, IPC-controlled wallpaper utility for Hyprland.";
+      Documentation = "https://wiki.hyprland.org/Hypr-Ecosystem/hyprpaper/";
+      PartOf = [ "graphical-session.target" ];
+      Requires = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.hyprpaper}/bin/hyprpaper";
+      Slice = "session.slice";
+      Restart = "on-failure";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  # Same stale-symlink issue as hyprpaper — hyprpolkitagent.service pointed
+  # at a GC'd store path. Declared here for the same reason.
+  systemd.user.services.hyprpolkitagent = {
+    Unit = {
+      Description = "Hyprland Polkit Authentication Agent";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+      ConditionEnvironment = "WAYLAND_DISPLAY";
+    };
+    Service = {
+      ExecStart = "${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent";
+      Slice = "session.slice";
+      TimeoutStopSec = "5sec";
+      Restart = "on-failure";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
   systemd.user.services.random-wallpaper = {
     Unit = {
       Description = "Set a random wallpaper at login";
