@@ -140,6 +140,9 @@ in
           main = {
             capslock = "esc";
             esc = "capslock";
+            # keyd 2.6.0 normalizes unmapped right shift -> left shift; map both explicitly.
+            leftshift = "leftshift";
+            rightshift = "rightshift";
           };
         };
       };
