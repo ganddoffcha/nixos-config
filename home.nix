@@ -165,6 +165,7 @@ in
     # ── Network ─────────────────────────────────────────────────────────
     speedtest-cli
     wireguard-tools
+    blueman  # Bluetooth GUI manager (blueman-manager + tray applet)
 
     # ── Development ─────────────────────────────────────────────────────
     git
