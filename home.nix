@@ -478,7 +478,7 @@ in
         lock_cmd = pidof hyprlock || hyprlock
         # Ensure hyprlock has acquired the Wayland lock and created its render surface before sleeping
         before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session; ${pkgs.coreutils}/bin/sleep 1
-        after_sleep_cmd = hyprctl dispatch dpms on
+        after_sleep_cmd = hyprctl dispatch dpms on; ${pkgs.procps}/bin/pkill -9 -x hyprlock; ${pkgs.coreutils}/bin/sleep 1; ${pkgs.systemd}/bin/loginctl lock-session
     }
 
     listener {
@@ -514,7 +514,7 @@ in
     general {
         lock_cmd = pidof hyprlock || hyprlock
         before_sleep_cmd = ${pkgs.systemd}/bin/loginctl lock-session; ${pkgs.coreutils}/bin/sleep 1
-        after_sleep_cmd = hyprctl dispatch dpms on
+        after_sleep_cmd = hyprctl dispatch dpms on; ${pkgs.procps}/bin/pkill -9 -x hyprlock; ${pkgs.coreutils}/bin/sleep 1; ${pkgs.systemd}/bin/loginctl lock-session
     }
   '';
   xdg.configFile."hypr/hyprlock.conf".source = ./dotfiles/hypr/hyprlock.conf;
