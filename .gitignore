@@ -57,6 +57,7 @@ result-*
 scripts/hotspot
 dotfiles/scripts/hotspot
 # Secrets & Keys
+curl.txt
 .pki/
 .ssh/
 .steam/
@@ -83,4 +84,5 @@ dotfiles/scripts/hotspot
 .gtkrc-2.0
 .themes/
 Desktop/
+telegram-bot/
 .aider*

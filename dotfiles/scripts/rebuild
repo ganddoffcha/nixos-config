@@ -52,17 +52,17 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+# ── Stage config files before rebuild (flakes ignore untracked files) ──
+
+cd "$REPO_DIR"
+git add configuration.nix home.nix flake.nix flake.lock dotfiles/ ntu_argon_proxy.py .gitignore AGENTS.md GEMINI.md 2>/dev/null || true
+
 # ── Rebuild (flake-based) ────────────────────────────────────────────
 
 echo "==> Running nixos-rebuild $ACTION --flake ~/#zephyrus ..."
 sudo nixos-rebuild "$ACTION" --flake "$HOME/#zephyrus"
 
 # ── Git commit (only if rebuild succeeded) ────────────────────────────
-
-cd "$REPO_DIR"
-
-# Stage only NixOS config files (avoids accidentally adding nested repos)
-git add configuration.nix home.nix dotfiles/ flake.lock hardware-configuration.nix .gitignore AGENTS.md GEMINI.md
 
 # Only commit if there are changes
 if git diff --quiet --cached; then

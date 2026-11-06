@@ -39,10 +39,11 @@ let
     stamp="$(cat "$STAMP" 2>/dev/null || true)"
     prof="$(cat /sys/firmware/acpi/platform_profile 2>/dev/null || true)"
     pl1="$(cat "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true)"
-    expect_prof="quiet"; expect_pl1="20000000"
-    [ "$state" = "ac" ] && { expect_prof="balanced"; expect_pl1="45000000"; }
+    epp="$(cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference 2>/dev/null || true)"
+    expect_prof="quiet"; expect_pl1="20000000"; expect_epp="power"
+    [ "$state" = "ac" ] && { expect_prof="balanced"; expect_pl1="45000000"; expect_epp="balance_performance"; }
     if [ "$stamp" = "$state" ] && [ "$prof" = "$expect_prof" ] && \
-       [ "$pl1" = "$expect_pl1" ]; then
+       [ "$pl1" = "$expect_pl1" ] && [ "$epp" = "$expect_epp" ]; then
       exit 0
     fi
 
@@ -51,8 +52,11 @@ let
       echo 45000000          > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
       echo 115000000         > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
       echo balanced          > /sys/firmware/acpi/platform_profile 2>/dev/null || true
+      # NOTE: intel_pstate HWP requires scaling_governor=powersave to allow
+      # energy_performance_preference=balance_performance (governor=performance
+      # locks EPP to 'performance' and returns EBUSY, causing 95°C idle temps).
       for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-        [ -f "$c" ] && echo performance > "$c" || true
+        [ -f "$c" ] && echo powersave > "$c" || true
       done
       for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
         [ -f "$c" ] && echo balance_performance > "$c" || true
@@ -544,9 +548,10 @@ in
   # PL1 cap never worked — it was ignored. 45W is the hardware-enforced
   # sysfs maximum and matches the i7-13620H base TDP.
   #
-  # Fix: PL1=45W (was 80W, silently rejected), PL2=115W, governor=performance
-  # on AC, EPP=balance_performance. asusd balanced profile EPP changed to
-  # BalancePerformance (was BalancePower) via environment.etc override below.
+  # Fix: PL1=45W (was 80W, silently rejected), PL2=115W, governor=powersave
+  # on AC with EPP=balance_performance (governor=performance locks EPP to
+  # 'performance' and returns EBUSY, causing 95°C idle temps). asusd balanced
+  # profile EPP is BalancePerformance via environment.etc override below.
   # ═══════════════════════════════════════════════════════════════════════
 
   # Boot-time: set RAPL caps + governor + EPP based on AC status (before login)
@@ -575,12 +580,12 @@ in
       done
 
       if [ "$on_ac" = "1" ]; then
-        # AC: gaming-ready — PL1=45W (RAPL sysfs max), PL2=115W, performance governor
+        # AC: gaming-ready — PL1=45W (RAPL sysfs max), PL2=115W, HWP balance_performance
         echo 45000000  > "$RAPL/constraint_0_power_limit_uw" 2>/dev/null || true
         echo 115000000 > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
         echo balanced  > /sys/firmware/acpi/platform_profile 2>/dev/null || true
         for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-          [ -f "$c" ] && echo performance > "$c" || true
+          [ -f "$c" ] && echo powersave > "$c" || true
         done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo balance_performance > "$c" || true
@@ -633,7 +638,7 @@ in
         echo 115000000 > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
         echo balanced  > /sys/firmware/acpi/platform_profile 2>/dev/null || true
         for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-          [ -f "$c" ] && echo performance > "$c" || true
+          [ -f "$c" ] && echo powersave > "$c" || true
         done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo balance_performance > "$c" || true
@@ -680,7 +685,7 @@ in
         echo 115000000 > "$RAPL/constraint_1_power_limit_uw" 2>/dev/null || true
         echo balanced  > /sys/firmware/acpi/platform_profile 2>/dev/null || true
         for c in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-          [ -f "$c" ] && echo performance > "$c" || true
+          [ -f "$c" ] && echo powersave > "$c" || true
         done
         for c in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
           [ -f "$c" ] && echo balance_performance > "$c" || true

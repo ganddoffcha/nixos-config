@@ -1,0 +1,113 @@
+#!/bin/sh
+# argon — One-command manager for NTU Gemini-4-Argon local proxy & Zoo Code
+set -eu
+
+PROXY_SCRIPT="$HOME/ntu_argon_proxy.py"
+CURL_FILE="$HOME/curl.txt"
+LOG_FILE="/tmp/ntu-argon-proxy.log"
+
+usage() {
+    cat << 'EOF'
+Usage: argon [OPTION]
+
+One-command setup & launcher for the NTU Gemini-4-Argon local proxy (127.0.0.1:8000/v1).
+
+Options:
+  (no args)   If clipboard has a 'Copy as cURL', save it to ~/curl.txt; start/restart proxy in background; test ping
+  -u, --update  Save current Wayland clipboard (wl-paste) to ~/curl.txt and hot-reload proxy
+  -r, --restart Restart the background proxy daemon and run a PONG health check
+  -s, --status  Show proxy status and recent log lines
+  -l, --logs    Follow live proxy logs (tail -f /tmp/ntu-argon-proxy.log)
+  -k, --kill    Stop the background proxy daemon
+  -h, --help    Show this help message
+EOF
+}
+
+update_from_clipboard() {
+    if command -v wl-paste >/dev/null 2>&1; then
+        clip="$(wl-paste 2>/dev/null || true)"
+        case "$clip" in
+            *widgetStreamAssist*)
+                printf '%s\n' "$clip" > "$CURL_FILE"
+                echo "✅ Detected fresh widgetStreamAssist cURL in clipboard -> saved to ~/curl.txt!"
+                return 0
+                ;;
+        esac
+    fi
+    return 1
+}
+
+start_proxy() {
+    pkill -f "ntu_argon_proxy.py" 2>/dev/null || true
+    sleep 0.3
+    nohup python3 -u "$PROXY_SCRIPT" > "$LOG_FILE" 2>&1 &
+    sleep 0.6
+    if pgrep -f "ntu_argon_proxy.py" >/dev/null 2>&1; then
+        echo "🚀 NTU Gemini-4-Argon proxy running in background (PID $(pgrep -f ntu_argon_proxy.py | head -n1))"
+        echo "📄 Logs: $LOG_FILE"
+    else
+        echo "❌ Proxy failed to start! Log output:"
+        cat "$LOG_FILE"
+        exit 1
+    fi
+}
+
+test_ping() {
+    echo "🧪 Testing connection to NTU gemini-4-argon..."
+    resp="$(command curl -s --max-time 25 http://127.0.0.1:8000/v1/chat/completions \
+        -H 'Content-Type: application/json' \
+        -d '{"model":"gemini-4-argon","messages":[{"role":"user","content":"Reply with the single word READY."}]}' || true)"
+    if printf '%s' "$resp" | command grep -q "READY"; then
+        echo "✅ Proxy test PASSED! Zoo Code is ready to use."
+    else
+        echo "⚠️  Proxy responded with: $resp"
+        echo "👉 Tip: In Brave DevTools (F12 -> Network), right-click latest widgetStreamAssist -> Copy as cURL, then run: argon"
+    fi
+}
+
+case "${1:-}" in
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    -u|--update)
+        if ! update_from_clipboard; then
+            wl-paste > "$CURL_FILE"
+            echo "✅ Saved clipboard to ~/curl.txt (proxy hot-reloads automatically)."
+        fi
+        test_ping
+        ;;
+    -r|--restart)
+        update_from_clipboard || true
+        start_proxy
+        test_ping
+        ;;
+    -s|--status)
+        if pgrep -f "ntu_argon_proxy.py" >/dev/null 2>&1; then
+            echo "🟢 Running (PID $(pgrep -f ntu_argon_proxy.py | tr '\n' ' '))"
+        else
+            echo "🔴 Stopped"
+        fi
+        tail -n 15 "$LOG_FILE" 2>/dev/null || true
+        ;;
+    -l|--logs)
+        exec tail -f "$LOG_FILE"
+        ;;
+    -k|--kill)
+        pkill -f "ntu_argon_proxy.py" 2>/dev/null || true
+        echo "🛑 Stopped ntu_argon_proxy.py."
+        ;;
+    "")
+        update_from_clipboard || true
+        if ! pgrep -f "ntu_argon_proxy.py" >/dev/null 2>&1; then
+            start_proxy
+        else
+            echo "🟢 Proxy already running (hot-reloads ~/curl.txt automatically)."
+        fi
+        test_ping
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac
