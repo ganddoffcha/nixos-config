@@ -53,7 +53,28 @@ def reload_if_needed(force=False):
     if idx == -1 or ridx == -1:
         print("❌ Could not find JSON payload in ~/curl.txt!")
         return False
-    base_payload = json.loads(raw[idx:ridx+1])
+    payload_str = raw[idx:ridx+1].replace("'\\''", "'")
+    try:
+        base_payload = json.loads(payload_str)
+    except Exception:
+        m_sess = re.search(r'"session"\s*:\s*"([^"]+)"', payload_str)
+        m_cfg = re.search(r'"configId"\s*:\s*"([^"]+)"', payload_str)
+        base_payload = {
+            "configId": m_cfg.group(1) if m_cfg else "39bc6644-69da-426c-8971-bbfc89f33c6a",
+            "additionalParams": {"token": "-", "origin": "ORIGIN_UNSPECIFIED"},
+            "streamAssistRequest": {
+                "session": m_sess.group(1) if m_sess else "collections/default_collection/engines/ntu-edu-app_1785831814030/sessions/-",
+                "query": {"parts": [{"text": ""}]},
+                "filter": "",
+                "fileIds": [],
+                "answerGenerationMode": "NORMAL",
+                "toolsSpec": {},
+                "languageCode": "en-US",
+                "userMetadata": {"timeZone": "Asia/Singapore"},
+                "assistSkippingMode": "REQUEST_ASSIST",
+                "assistGenerationConfig": {"modelId": "gemini-4-argon"}
+            }
+        }
 
     STATE.update({"mtime": mtime, "url": url, "headers": headers, "payload": base_payload, "cookies": cookies})
     print(f"🔄 Loaded ~/curl.txt ({len(headers)} headers, {len(cookies)} cookies)")
@@ -80,20 +101,22 @@ def build_fresh_headers():
     headers["cookie"] = format_cookie_str(cookies)
     return headers
 
-def extract_text_recursive(obj, out_list):
+def extract_text_recursive(obj, out_list, thought_list):
     if isinstance(obj, dict):
         if "text" in obj and isinstance(obj["text"], str):
-            if not obj.get("thought", False):
+            if obj.get("thought", False):
+                thought_list.append(obj["text"])
+            else:
                 out_list.append(obj["text"])
         else:
             for k, v in obj.items():
                 if k != "query":
-                    extract_text_recursive(v, out_list)
+                    extract_text_recursive(v, out_list, thought_list)
     elif isinstance(obj, list):
         for item in obj:
-            extract_text_recursive(item, out_list)
+            extract_text_recursive(item, out_list, thought_list)
 
-def ask_ntu_argon(prompt_text: str) -> str:
+def ask_ntu_argon(prompt_text: str):
     reload_if_needed()
     payload = json.loads(json.dumps(STATE["payload"]))
     req_body = payload["streamAssistRequest"]
@@ -117,24 +140,27 @@ def ask_ntu_argon(prompt_text: str) -> str:
     except urllib.error.HTTPError as e:
         err_body = e.read().decode("utf-8", errors="ignore")
         print(f"❌ HTTP Error {e.code}: {err_body[:300]}")
-        return f"[HTTP Error {e.code} - Run 'argon -u' after copying fresh cURL from Brave DevTools]: {err_body[:200]}"
+        return "", f"[HTTP Error {e.code} - Run 'argon -u' after copying fresh cURL from Brave DevTools]: {err_body[:200]}"
 
     try:
         parsed = json.loads(raw_resp)
     except Exception:
-        return raw_resp[:1000]
+        return "", raw_resp[:1000]
 
     out = []
-    if isinstance(parsed, list):
-        for chunk in parsed:
-            for reply in chunk.get("answer", {}).get("replies", []):
-                parts = reply.get("groundedContent", {}).get("content", {}).get("parts", [])
-                for p in parts:
-                    if "text" in p and not p.get("thought", False):
-                        out.append(p["text"])
-    if not out:
-        extract_text_recursive(parsed, out)
-    return "".join(out) or "[Empty reply]"
+    thoughts = []
+    extract_text_recursive(parsed, out, thoughts)
+    answer_text = "".join(out) or "[Empty reply]"
+    thought_text = "".join(thoughts).strip()
+    if "🧠💭" in answer_text and "!]" in answer_text:
+        s_idx = answer_text.find("🧠💭")
+        e_idx = answer_text.find("!]", s_idx)
+        if e_idx != -1:
+            inline_thought = answer_text[s_idx + len("🧠💭"):e_idx].strip()
+            if inline_thought:
+                thought_text = (thought_text + "\n" + inline_thought).strip() if thought_text else inline_thought
+            answer_text = (answer_text[:s_idx] + answer_text[e_idx + 2:]).strip()
+    return thought_text, answer_text
 
 def build_prompt_with_tools(messages, tools):
     parts = []
@@ -181,25 +207,33 @@ def parse_tool_calls(answer_text: str):
         brace_pos = answer_text.find("{", start_tag + len(open_tag))
         if brace_pos == -1:
             break
+        end_tag = answer_text.find(close_tag, brace_pos)
         try:
             call_obj, end_json = decoder.raw_decode(answer_text, brace_pos)
-            end_tag = answer_text.find(close_tag, end_json)
-            end_span = (end_tag + len(close_tag)) if end_tag != -1 else end_json
-            spans_to_remove.append((start_tag, end_span))
-            name = call_obj.get("name") if isinstance(call_obj, dict) else None
-            args = call_obj.get("arguments", {}) if isinstance(call_obj, dict) else {}
-            if not isinstance(args, str):
-                args = json.dumps(args)
-            if name:
-                tool_calls.append({
-                    "id": f"call_{uuid.uuid4().hex[:12]}",
-                    "type": "function",
-                    "function": {"name": name, "arguments": args}
-                })
-            pos = end_span
+            if end_tag != -1 and end_json <= end_tag:
+                end_span = end_tag + len(close_tag)
+            else:
+                end_span = end_json
+            if isinstance(call_obj, dict) and "name" in call_obj and "arguments" in call_obj:
+                spans_to_remove.append((start_tag, end_span))
+                name = call_obj.get("name")
+                args = call_obj.get("arguments", {})
+                if not isinstance(args, str):
+                    args = json.dumps(args)
+                if name:
+                    tool_calls.append({
+                        "id": f"call_{uuid.uuid4().hex[:12]}",
+                        "type": "function",
+                        "function": {"name": name, "arguments": args}
+                    })
+                pos = end_span
+            else:
+                pos = (end_tag + len(close_tag)) if end_tag != -1 else end_json
         except Exception as e:
-            print(f"Warning: Failed to raw_decode at {brace_pos}: {e}")
-            pos = brace_pos + 1
+            if end_tag != -1:
+                pos = end_tag + len(close_tag)
+            else:
+                pos = brace_pos + 1
     if spans_to_remove:
         pieces = []
         last = 0
@@ -240,9 +274,16 @@ class OpenAIProxy(BaseHTTPRequestHandler):
 
         full_prompt = build_prompt_with_tools(messages, tools)
         print(f"📨 Sending prompt ({len(full_prompt)} chars, {len(tools)} tools) to NTU gemini-4-argon...")
-        raw_answer = ask_ntu_argon(full_prompt)
+        thought_text, raw_answer = ask_ntu_argon(full_prompt)
         cleaned_text, tool_calls = parse_tool_calls(raw_answer)
-        print(f"✅ Reply: {len(cleaned_text)} chars text, {len(tool_calls)} tool_calls!")
+        prompt_tokens = max(1, len(full_prompt) // 4)
+        completion_tokens = max(1, (len(raw_answer) + len(thought_text)) // 4)
+        usage_obj = {
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": prompt_tokens + completion_tokens
+        }
+        print(f"✅ Reply: {len(thought_text)} chars thought, {len(cleaned_text)} chars text, {len(tool_calls)} tool_calls! (tokens: {prompt_tokens} in / {completion_tokens} out)")
 
         finish_reason = "tool_calls" if tool_calls else "stop"
 
@@ -253,6 +294,8 @@ class OpenAIProxy(BaseHTTPRequestHandler):
                 self.send_header("Cache-Control", "no-cache")
                 self.end_headers()
                 delta = {"role": "assistant"}
+                if thought_text:
+                    delta["reasoning_content"] = thought_text
                 if cleaned_text:
                     delta["content"] = cleaned_text
                 if tool_calls:
@@ -261,13 +304,15 @@ class OpenAIProxy(BaseHTTPRequestHandler):
                         for idx, tc in enumerate(tool_calls)
                     ]
                 chunk1 = {"id": f"chatcmpl-{int(time.time())}", "object": "chat.completion.chunk", "created": int(time.time()), "model": "gemini-4-argon", "choices": [{"index": 0, "delta": delta, "finish_reason": None}]}
-                chunk2 = {"id": f"chatcmpl-{int(time.time())}", "object": "chat.completion.chunk", "created": int(time.time()), "model": "gemini-4-argon", "choices": [{"index": 0, "delta": {}, "finish_reason": finish_reason}]}
+                chunk2 = {"id": f"chatcmpl-{int(time.time())}", "object": "chat.completion.chunk", "created": int(time.time()), "model": "gemini-4-argon", "choices": [{"index": 0, "delta": {}, "finish_reason": finish_reason}], "usage": usage_obj}
                 self.wfile.write(f"data: {json.dumps(chunk1)}\n\ndata: {json.dumps(chunk2)}\n\ndata: [DONE]\n\n".encode("utf-8"))
             else:
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 msg = {"role": "assistant", "content": cleaned_text or None}
+                if thought_text:
+                    msg["reasoning_content"] = thought_text
                 if tool_calls:
                     msg["tool_calls"] = tool_calls
                 self.wfile.write(json.dumps({
@@ -276,7 +321,7 @@ class OpenAIProxy(BaseHTTPRequestHandler):
                     "created": int(time.time()),
                     "model": "gemini-4-argon",
                     "choices": [{"index": 0, "message": msg, "finish_reason": finish_reason}],
-                    "usage": {"prompt_tokens": 100, "completion_tokens": 100, "total_tokens": 200}
+                    "usage": usage_obj
                 }).encode("utf-8"))
         except (BrokenPipeError, ConnectionResetError):
             print("⚠️ Client disconnected before response was fully written.")
