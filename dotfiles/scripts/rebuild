@@ -55,7 +55,7 @@ done
 # ── Stage config files before rebuild (flakes ignore untracked files) ──
 
 cd "$REPO_DIR"
-git add configuration.nix home.nix flake.nix flake.lock dotfiles/ ntu_argon_proxy.py .gitignore AGENTS.md GEMINI.md 2>/dev/null || true
+git add configuration.nix home.nix flake.nix flake.lock dotfiles/ .gitignore AGENTS.md GEMINI.md 2>/dev/null || true
 
 # ── Rebuild (flake-based) ────────────────────────────────────────────
 
