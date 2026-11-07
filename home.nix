@@ -652,10 +652,6 @@ in
     source = ./dotfiles/scripts/rebuild;
     executable = true;
   };
-  home.file."scripts/argon" = {
-    source = ./dotfiles/scripts/argon;
-    executable = true;
-  };
 
   systemd.user.services.auto-refresh = {
     Unit = {
