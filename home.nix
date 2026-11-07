@@ -173,6 +173,7 @@ in
     antigravity-cli  # Google Antigravity agentic TUI CLI (`agy`)
     antigravity-ide  # Google Antigravity IDE (VS Code fork, `antigravity-ide`)
     python3
+    python3Packages.playwright  # headless capture daemon for `argon daemon` (NTU gemini-4-argon)
     elan
     openssl
     nss
