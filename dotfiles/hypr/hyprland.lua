@@ -6,7 +6,15 @@
 -----------------
 ---- MONITORS ----
 -----------------
-hl.monitor({ output = "eDP-1",    mode = "2560x1600@240", position = "0x0",       scale = "1.6" })
+hl.monitor({
+    output        = "eDP-1",
+    mode          = "2560x1600@240",
+    position      = "0x0",
+    scale         = "1.6",
+    cm            = "hdr",   -- wide gamut + HDR PQ (permanent HDR)
+    sdrbrightness = 1.2,     -- SDR content brightness in HDR mode
+    bitdepth      = 10,      -- 10-bit for smoother gradients
+})
 -- hl.monitor({ output = "eDP-1",    mode = "highrr",        position = "auto",      scale = "3.2" })
 -- hl.monitor({ output = "HDMI-A-1", mode = "3840x2160@119.80", position = "auto-up", scale = "2" })
 hl.monitor({ output = "HDMI-A-1", mode = "preferred",     position = "auto-right", scale = "1" })
