@@ -612,6 +612,24 @@ in
   xdg.configFile."yazi/theme.toml".source = ./dotfiles/yazi/theme.toml;
   xdg.configFile."zathura/zathurarc".source = ./dotfiles/zathura/zathurarc;
   xdg.configFile."mpv/mpv.conf".source = ./dotfiles/mpv/mpv.conf;
+  # Prevent the ALC285 analog sink from suspending. WirePlumber defaults to
+  # 5s of silence before suspending the ALSA node; resuming it is slow on this
+  # ASUS (multi-second delay, occasionally minutes) — keep it awake so
+  # mpv/audio starts instantly.
+  xdg.configFile."wireplumber/wireplumber.conf.d/51-disable-suspend.conf".text = ''
+    monitor.alsa.rules = [
+      {
+        matches = [
+          { node.name = "alsa_output.*" }
+        ]
+        actions = {
+          update-props = {
+            session.suspend-timeout-seconds = 0
+          }
+        }
+      }
+    ]
+  '';
 
   # ── Qt / Kvantum theming ──────────────────────────────────────────────
   xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
