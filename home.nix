@@ -145,6 +145,7 @@ in
     mpv
     imv
     yt-dlp
+    ffmpeg
     playerctl
     pulsemixer
     obs-studio
