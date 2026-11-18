@@ -719,6 +719,14 @@ in
   };
   nix.optimise.automatic = true;
 
+  # NIX-LD — run generic FHS dynamically-linked binaries (uv-managed Python,
+  # manylinux wheels like PyTorch) that look for /lib64/ld-linux-x86-64.so.2.
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc.lib   # libgomp, libstdc++, libgcc_s — required by PyTorch
+    zlib
+  ];
+
   # ═══════════════════════════════════════════════════════════════════════
   # SECURITY & SUDO
   # ═══════════════════════════════════════════════════════════════════════
